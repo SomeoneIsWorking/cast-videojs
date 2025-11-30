@@ -162,10 +162,14 @@ class VideojsCastReceiver {
         console.log("Receiver ready - waiting for cast");
       }, 500);
     } catch (e) {
-      console.error("Error initializing Cast Receiver:", e);
-      this.elements.statusText.textContent =
-        "Error initializing Cast: " + e.message;
+      console.error('Error initializing Cast Receiver:', e);
+      this.elements.statusText.textContent = 'Error initializing Cast: ' + e.message;
       this.setAppState(AppState.ERROR);
+      
+      // Show debug viewer on error
+      if (this.debugViewer) {
+        this.debugViewer.show();
+      }
     }
   }
 
@@ -176,8 +180,12 @@ class VideojsCastReceiver {
 
     if (!media || !media.contentId) {
       console.error("Invalid media in load request");
+      if (this.debugViewer) {
+        this.debugViewer.show();
+      }
       return loadRequestData;
     }
+
 
     // Check for debug mode in content URL
     try {
@@ -365,7 +373,12 @@ class VideojsCastReceiver {
 
     this.elements.errorMessage.textContent = errorMessage;
     this.setAppState(AppState.ERROR);
+    
+    if (this.debugViewer) {
+      this.debugViewer.show();
+    }
   }
+
 
   updateCastTracks() {
     const tracks = [];
