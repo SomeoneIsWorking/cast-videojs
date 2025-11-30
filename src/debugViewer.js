@@ -164,6 +164,20 @@ export class DebugLogViewer {
     content.scrollTop = content.scrollHeight;
   }
 
+  scrollUp() {
+    const content = this.container.querySelector('.debug-log-content');
+    if (content) {
+      content.scrollTop -= 50;
+    }
+  }
+
+  scrollDown() {
+    const content = this.container.querySelector('.debug-log-content');
+    if (content) {
+      content.scrollTop += 50;
+    }
+  }
+
   toggle() {
     this.visible = !this.visible;
     
