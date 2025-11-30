@@ -175,6 +175,13 @@ export class DebugLogViewer {
     }
   }
 
+  show() {
+    if (!this.visible) {
+      this.toggle();
+    }
+  }
+
+
   clear() {
     this.logs = [];
     this.render();
