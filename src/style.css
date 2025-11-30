@@ -37,11 +37,6 @@ body #app {
   display: block;
 }
 
-.app-state-idle .logo,
-.app-state-idle span.cast-ready {
-  display: block;
-}
-
 .content-state-loading .overlay,
 .content-state-loading .overlay .content-buffer,
 .content-state-loading #player {
@@ -112,17 +107,6 @@ body #app {
   display: table;
 }
 
-/* App Loading & Idle */
-span.cast-ready {
-  font-size: 1.56vw;
-  font-weight: 200;
-  position: relative;
-  display: none;
-  top: 45%;
-  color: var(--light-grey);
-  animation: pulse 2s ease-in-out infinite;
-}
-
 @keyframes pulse {
   0%, 100% {
     opacity: 0.6;
@@ -130,20 +114,6 @@ span.cast-ready {
   50% {
     opacity: 1;
   }
-}
-
-
-.logo {
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="24" font-family="Arial">Video.js</text></svg>');
-  height: 13.88vh;
-  position: relative;
-  top: 15%;
-  margin: 0 auto;
-  display: none;
-  width: 300px;
 }
 
 .loading-spinner {
@@ -373,10 +343,6 @@ ul.cast-controlbar li:first-child {
   .text-elapsed,
   .text-duration {
     font-size: 2vw;
-  }
-  
-  span.cast-ready {
-    font-size: 3vw;
   }
 }
 
