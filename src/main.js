@@ -68,21 +68,6 @@ class VideojsCastReceiver {
       }
     }
 
-    // Global error handlers
-    window.addEventListener('error', (event) => {
-      console.error('Global error:', event.error || event.message);
-      if (this.debugViewer) {
-        this.debugViewer.show();
-      }
-    });
-
-    window.addEventListener('unhandledrejection', (event) => {
-      console.error('Unhandled rejection:', event.reason);
-      if (this.debugViewer) {
-        this.debugViewer.show();
-      }
-    });
-
     // Initialize Video.js player
     this.initPlayer();
 
@@ -276,10 +261,7 @@ class VideojsCastReceiver {
     if (loadRequestData.autoplay) {
       console.log('Autoplay requested');
       setTimeout(() => {
-        this.player.play().catch(e => {
-          console.error('Autoplay failed:', e);
-          if (this.debugViewer) this.debugViewer.show();
-        });
+        this.player.play()
       }, 100);
     }
 
@@ -422,10 +404,6 @@ class VideojsCastReceiver {
 
     this.elements.errorMessage.textContent = errorMessage;
     this.setAppState(AppState.ERROR);
-    
-    if (this.debugViewer) {
-      this.debugViewer.show();
-    }
   }
 
 
