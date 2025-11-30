@@ -202,6 +202,7 @@ class VideojsCastReceiver {
   }
 
   onLoadRequest(loadRequestData) {
+    loadRequestData.media.hlsSegmentFormat = cast.framework.messages.HlsSegmentFormat.TS;
     console.log("Load request received:", loadRequestData);
 
     const media = loadRequestData.media;
