@@ -180,7 +180,8 @@ class VideojsCastReceiver {
       // Initialize remote control handler
       this.remoteControl = new RemoteControlHandler(
         this.player,
-        this.playerManager
+        this.playerManager,
+        this.debugViewer
       );
 
       // Transition to IDLE state when receiver is ready

@@ -4,13 +4,13 @@
  */
 
 export class RemoteControlHandler {
-  constructor(player, playerManager) {
+  constructor(player, playerManager, debugViewer) {
     this.player = player;
     this.playerManager = playerManager;
     this.menuVisible = false;
     this.currentMenu = null; // 'audio', 'subtitles', 'quality'
     this.selectedIndex = 0;
-    
+    this.debugViewer = debugViewer;
     this.init();
   }
 
@@ -31,10 +31,21 @@ export class RemoteControlHandler {
     }
 
     switch (key) {
+      case "ColorF0Red": // toggle debug
+        this.debugViewer.toggle();
+        break;
       case 'ArrowUp':
+        if (this.debugViewer.visible){
+          this.debugViewer.scrollUp();
+          break;
+        }
         this.navigateUp();
         break;
       case 'ArrowDown':
+        if (this.debugViewer.visible){
+          this.debugViewer.scrollDown();
+          break;
+        }
         this.navigateDown();
         break;
       case 'ArrowLeft':
