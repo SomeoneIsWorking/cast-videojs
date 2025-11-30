@@ -124,25 +124,28 @@ class VideojsCastReceiver {
         (loadRequestData) => this.onLoadRequest(loadRequestData)
       );
 
-      // Player manager event listeners
-      this.playerManager.addEventListener(
-        cast.framework.events.EventType.PLAY,
-        () => this.handleCastPlay()
+        // Intercept PLAY request
+      this.playerManager.setMessageInterceptor(
+        cast.framework.messages.MessageType.PLAY,
+        (data) => this.handleCastPlay(data)
       );
 
-      this.playerManager.addEventListener(
-        cast.framework.events.EventType.PAUSE,
-        () => this.handleCastPause()
+      // Intercept PAUSE request
+      this.playerManager.setMessageInterceptor(
+        cast.framework.messages.MessageType.PAUSE,
+        (data) => this.handleCastPause(data)
       );
 
-      this.playerManager.addEventListener(
-        cast.framework.events.EventType.SEEK,
-        (event) => this.handleCastSeek(event)
+      // Intercept SEEK request
+      this.playerManager.setMessageInterceptor(
+        cast.framework.messages.MessageType.SEEK,
+        (data) => this.handleCastSeek(data)
       );
 
-      this.playerManager.addEventListener(
-        cast.framework.events.EventType.EDIT_TRACKS_INFO,
-        (event) => this.handleEditTracksInfo(event)
+      // Intercept EDIT_TRACKS_INFO request
+      this.playerManager.setMessageInterceptor(
+        cast.framework.messages.MessageType.EDIT_TRACKS_INFO,
+        (data) => this.handleEditTracksInfo(data)
       );
 
       // Start the receiver
@@ -245,49 +248,54 @@ class VideojsCastReceiver {
     return loadRequestData;
   }
 
-  handleCastPlay() {
-    console.log("Cast PLAY command");
+  handleCastPlay(data) {
+    console.log('Cast PLAY command');
     if (this.player) {
       this.player.play();
     }
+    return data;
   }
 
-  handleCastPause() {
-    console.log("Cast PAUSE command");
+  handleCastPause(data) {
+    console.log('Cast PAUSE command');
     if (this.player) {
       this.player.pause();
     }
+    return data;
   }
 
-  handleCastSeek(event) {
-    console.log("Cast SEEK command:", event);
-    if (this.player && event.currentTime !== undefined) {
-      this.player.currentTime(event.currentTime);
-      this.setFlag("seek", true);
-      setTimeout(() => this.setFlag("seek", false), 3000);
+  handleCastSeek(data) {
+    console.log('Cast SEEK command:', data);
+    if (this.player && data.currentTime !== undefined) {
+      this.player.currentTime(data.currentTime);
+      this.setFlag('seek', true);
+      setTimeout(() => this.setFlag('seek', false), 3000);
     }
+    return data;
   }
 
-  handleEditTracksInfo(event) {
-    console.log("Edit tracks info:", event);
-
-    if (!event.requestData || !event.requestData.activeTrackIds) {
-      return;
+  handleEditTracksInfo(data) {
+    console.log('Edit tracks info:', data);
+    
+    if (!data || !data.activeTrackIds) {
+      return data;
     }
 
-    const activeTrackIds = event.requestData.activeTrackIds;
-
+    const activeTrackIds = data.activeTrackIds;
+    
     // Handle text tracks
     const textTracks = this.player.textTracks();
     for (let i = 0; i < textTracks.length; i++) {
-      textTracks[i].mode = "disabled";
+      textTracks[i].mode = 'disabled';
     }
 
-    activeTrackIds.forEach((trackId) => {
+    activeTrackIds.forEach(trackId => {
       // Find and enable the track
       for (let i = 0; i < textTracks.length; i++) {
-        if (textTracks[i].id === trackId) {
-          textTracks[i].mode = "showing";
+        // Cast uses number IDs, Video.js might use strings or numbers
+        // We compare loosely or convert
+        if (textTracks[i].id == trackId || textTracks[i].src == trackId) {
+          textTracks[i].mode = 'showing';
         }
       }
     });
@@ -295,9 +303,9 @@ class VideojsCastReceiver {
     // Handle audio tracks
     const audioTracks = this.player.audioTracks();
     if (audioTracks) {
-      activeTrackIds.forEach((trackId) => {
+      activeTrackIds.forEach(trackId => {
         for (let i = 0; i < audioTracks.length; i++) {
-          if (audioTracks[i].id === trackId) {
+          if (String(i) == String(trackId)) { // Audio track IDs were set to index
             audioTracks[i].enabled = true;
           } else {
             audioTracks[i].enabled = false;
@@ -305,7 +313,10 @@ class VideojsCastReceiver {
         }
       });
     }
+    
+    return data;
   }
+
 
   // Player event handlers
   onLoadStart() {
