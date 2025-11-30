@@ -61,8 +61,27 @@ class VideojsCastReceiver {
 
     if (this.debugMode) {
       cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
+      videojs.log.level('debug');
       console.log("Debug mode enabled");
+      if (this.debugViewer) {
+        this.debugViewer.show();
+      }
     }
+
+    // Global error handlers
+    window.addEventListener('error', (event) => {
+      console.error('Global error:', event.error || event.message);
+      if (this.debugViewer) {
+        this.debugViewer.show();
+      }
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled rejection:', event.reason);
+      if (this.debugViewer) {
+        this.debugViewer.show();
+      }
+    });
 
     // Initialize Video.js player
     this.initPlayer();
@@ -98,6 +117,12 @@ class VideojsCastReceiver {
     this.player.on("timeupdate", () => this.onTimeUpdate());
     this.player.on("ended", () => this.onEnded());
     this.player.on("error", (e) => this.onError(e));
+    
+    // Additional debug events
+    this.player.on('stalled', () => console.warn('Player: stalled'));
+    this.player.on('suspend', () => console.log('Player: suspend'));
+    this.player.on('abort', () => console.warn('Player: abort'));
+    this.player.on('emptied', () => console.log('Player: emptied'));
 
     console.log("Video.js player initialized");
   }
