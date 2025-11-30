@@ -93,7 +93,7 @@ class VideojsCastReceiver {
   initPlayer() {
     this.player = videojs("player", {
       controls: false,
-      autoplay: false,
+      autoplay: true,
       preload: "auto",
       fluid: false,
       fill: true,
@@ -268,6 +268,17 @@ class VideojsCastReceiver {
           );
         }
       });
+    }
+
+    // Handle autoplay
+    if (loadRequestData.autoplay) {
+      console.log('Autoplay requested');
+      setTimeout(() => {
+        this.player.play().catch(e => {
+          console.error('Autoplay failed:', e);
+          if (this.debugViewer) this.debugViewer.show();
+        });
+      }, 100);
     }
 
     return loadRequestData;
