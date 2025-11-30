@@ -16,88 +16,87 @@ export class RemoteControlHandler {
 
   init() {
     // Listen for key events
-    document.addEventListener('keydown', (e) => this.handleKeyPress(e));
-    
-    console.log('Remote control handler initialized');
+    document.addEventListener("keydown", (e) => this.handleKeyPress(e));
+
+    console.log("Remote control handler initialized");
   }
 
   handleKeyPress(event) {
     const key = event.key;
-    console.log('Key pressed:', key, 'Code:', event.keyCode);
 
     // Prevent default behavior for navigation keys
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(key)) {
-      event.preventDefault();
-    }
+    event.preventDefault();
 
     switch (key) {
       case "ColorF0Red": // toggle debug
         this.debugViewer.toggle();
         break;
-      case 'ArrowUp':
-        if (this.debugViewer.visible){
+      case "ArrowUp":
+        if (this.debugViewer.visible) {
           this.debugViewer.scrollUp();
           break;
         }
         this.navigateUp();
         break;
-      case 'ArrowDown':
-        if (this.debugViewer.visible){
+      case "ArrowDown":
+        if (this.debugViewer.visible) {
           this.debugViewer.scrollDown();
           break;
         }
         this.navigateDown();
         break;
-      case 'ArrowLeft':
+      case "ArrowLeft":
         this.navigateLeft();
         break;
-      case 'ArrowRight':
+      case "ArrowRight":
         this.navigateRight();
         break;
-      case 'Enter':
+      case "Enter":
         this.select();
         break;
-      case 'Escape':
-      case 'Backspace':
+      case "Escape":
+      case "Backspace":
         this.closeMenu();
         break;
-      case 'MediaTrackPrevious':
-      case 'MediaRewind':
+      case "MediaTrackPrevious":
+      case "MediaRewind":
         this.seekBackward();
         break;
-      case 'MediaTrackNext':
-      case 'MediaFastForward':
+      case "MediaTrackNext":
+      case "MediaFastForward":
         this.seekForward();
         break;
-      case 'MediaPlayPause':
+      case "MediaPlayPause":
         this.togglePlayPause();
         break;
       // Custom keys for track selection
-      case 'a':
-      case 'A':
+      case "a":
+      case "A":
         this.toggleAudioTrackMenu();
         break;
-      case 's':
-      case 'S':
+      case "s":
+      case "S":
         this.toggleSubtitleMenu();
         break;
-      case 'q':
-      case 'Q':
+      case "q":
+      case "Q":
         this.toggleQualityMenu();
         break;
+      default:
+        console.log("Key pressed:", key, "Code:", event.keyCode);
     }
   }
 
   navigateUp() {
     if (!this.menuVisible) return;
-    
+
     this.selectedIndex = Math.max(0, this.selectedIndex - 1);
     this.updateMenuUI();
   }
 
   navigateDown() {
     if (!this.menuVisible) return;
-    
+
     const maxIndex = this.getMenuItemCount() - 1;
     this.selectedIndex = Math.min(maxIndex, this.selectedIndex + 1);
     this.updateMenuUI();
@@ -125,13 +124,13 @@ export class RemoteControlHandler {
 
     // Apply the selected track
     switch (this.currentMenu) {
-      case 'audio':
+      case "audio":
         this.selectAudioTrack(this.selectedIndex);
         break;
-      case 'subtitles':
+      case "subtitles":
         this.selectSubtitleTrack(this.selectedIndex);
         break;
-      case 'quality':
+      case "quality":
         this.selectQuality(this.selectedIndex);
         break;
     }
@@ -140,7 +139,7 @@ export class RemoteControlHandler {
   }
 
   toggleAudioTrackMenu() {
-    if (this.currentMenu === 'audio') {
+    if (this.currentMenu === "audio") {
       this.closeMenu();
     } else {
       this.showAudioTrackMenu();
@@ -148,7 +147,7 @@ export class RemoteControlHandler {
   }
 
   toggleSubtitleMenu() {
-    if (this.currentMenu === 'subtitles') {
+    if (this.currentMenu === "subtitles") {
       this.closeMenu();
     } else {
       this.showSubtitleMenu();
@@ -156,7 +155,7 @@ export class RemoteControlHandler {
   }
 
   toggleQualityMenu() {
-    if (this.currentMenu === 'quality') {
+    if (this.currentMenu === "quality") {
       this.closeMenu();
     } else {
       this.showQualityMenu();
@@ -166,40 +165,42 @@ export class RemoteControlHandler {
   showAudioTrackMenu() {
     const audioTracks = this.player.audioTracks();
     if (!audioTracks || audioTracks.length === 0) {
-      console.log('No audio tracks available');
+      console.log("No audio tracks available");
       return;
     }
 
-    this.currentMenu = 'audio';
+    this.currentMenu = "audio";
     this.selectedIndex = this.getCurrentAudioTrackIndex();
     this.menuVisible = true;
-    this.renderMenu('Audio Tracks', this.getAudioTrackList());
+    this.renderMenu("Audio Tracks", this.getAudioTrackList());
   }
 
   showSubtitleMenu() {
     const textTracks = this.player.textTracks();
     if (!textTracks || textTracks.length === 0) {
-      console.log('No subtitle tracks available');
+      console.log("No subtitle tracks available");
       return;
     }
 
-    this.currentMenu = 'subtitles';
+    this.currentMenu = "subtitles";
     this.selectedIndex = this.getCurrentSubtitleTrackIndex();
     this.menuVisible = true;
-    this.renderMenu('Subtitles', this.getSubtitleTrackList());
+    this.renderMenu("Subtitles", this.getSubtitleTrackList());
   }
 
   showQualityMenu() {
-    const qualityLevels = this.player.qualityLevels ? this.player.qualityLevels() : null;
+    const qualityLevels = this.player.qualityLevels
+      ? this.player.qualityLevels()
+      : null;
     if (!qualityLevels || qualityLevels.length === 0) {
-      console.log('No quality levels available');
+      console.log("No quality levels available");
       return;
     }
 
-    this.currentMenu = 'quality';
+    this.currentMenu = "quality";
     this.selectedIndex = this.getCurrentQualityIndex();
     this.menuVisible = true;
-    this.renderMenu('Quality', this.getQualityList());
+    this.renderMenu("Quality", this.getQualityList());
   }
 
   closeMenu() {
@@ -213,10 +214,10 @@ export class RemoteControlHandler {
     if (!audioTracks || index >= audioTracks.length) return;
 
     for (let i = 0; i < audioTracks.length; i++) {
-      audioTracks[i].enabled = (i === index);
+      audioTracks[i].enabled = i === index;
     }
 
-    console.log('Selected audio track:', index);
+    console.log("Selected audio track:", index);
   }
 
   selectSubtitleTrack(index) {
@@ -225,18 +226,20 @@ export class RemoteControlHandler {
 
     // Index 0 = Off
     for (let i = 0; i < textTracks.length; i++) {
-      textTracks[i].mode = 'disabled';
+      textTracks[i].mode = "disabled";
     }
 
     if (index > 0 && index <= textTracks.length) {
-      textTracks[index - 1].mode = 'showing';
+      textTracks[index - 1].mode = "showing";
     }
 
-    console.log('Selected subtitle track:', index);
+    console.log("Selected subtitle track:", index);
   }
 
   selectQuality(index) {
-    const qualityLevels = this.player.qualityLevels ? this.player.qualityLevels() : null;
+    const qualityLevels = this.player.qualityLevels
+      ? this.player.qualityLevels()
+      : null;
     if (!qualityLevels || index >= qualityLevels.length) return;
 
     // Disable all quality levels
@@ -247,7 +250,7 @@ export class RemoteControlHandler {
     // Enable selected quality
     qualityLevels[index].enabled = true;
 
-    console.log('Selected quality:', index);
+    console.log("Selected quality:", index);
   }
 
   getCurrentAudioTrackIndex() {
@@ -265,13 +268,15 @@ export class RemoteControlHandler {
     if (!textTracks) return 0;
 
     for (let i = 0; i < textTracks.length; i++) {
-      if (textTracks[i].mode === 'showing') return i + 1;
+      if (textTracks[i].mode === "showing") return i + 1;
     }
     return 0; // Off
   }
 
   getCurrentQualityIndex() {
-    const qualityLevels = this.player.qualityLevels ? this.player.qualityLevels() : null;
+    const qualityLevels = this.player.qualityLevels
+      ? this.player.qualityLevels()
+      : null;
     if (!qualityLevels) return 0;
 
     for (let i = 0; i < qualityLevels.length; i++) {
@@ -288,7 +293,7 @@ export class RemoteControlHandler {
       const track = audioTracks[i];
       list.push({
         label: track.label || `Audio ${i + 1}`,
-        active: track.enabled
+        active: track.enabled,
       });
     }
 
@@ -297,15 +302,15 @@ export class RemoteControlHandler {
 
   getSubtitleTrackList() {
     const textTracks = this.player.textTracks();
-    const list = [{ label: 'Off', active: true }];
+    const list = [{ label: "Off", active: true }];
 
     for (let i = 0; i < textTracks.length; i++) {
       const track = textTracks[i];
       list.push({
         label: track.label || `Subtitle ${i + 1}`,
-        active: track.mode === 'showing'
+        active: track.mode === "showing",
       });
-      if (track.mode === 'showing') {
+      if (track.mode === "showing") {
         list[0].active = false;
       }
     }
@@ -314,7 +319,9 @@ export class RemoteControlHandler {
   }
 
   getQualityList() {
-    const qualityLevels = this.player.qualityLevels ? this.player.qualityLevels() : null;
+    const qualityLevels = this.player.qualityLevels
+      ? this.player.qualityLevels()
+      : null;
     const list = [];
 
     if (!qualityLevels) return list;
@@ -323,7 +330,7 @@ export class RemoteControlHandler {
       const level = qualityLevels[i];
       list.push({
         label: `${level.height}p`,
-        active: level.enabled
+        active: level.enabled,
       });
     }
 
@@ -332,12 +339,16 @@ export class RemoteControlHandler {
 
   getMenuItemCount() {
     switch (this.currentMenu) {
-      case 'audio':
+      case "audio":
         return this.player.audioTracks() ? this.player.audioTracks().length : 0;
-      case 'subtitles':
-        return (this.player.textTracks() ? this.player.textTracks().length : 0) + 1; // +1 for "Off"
-      case 'quality':
-        return this.player.qualityLevels ? this.player.qualityLevels().length : 0;
+      case "subtitles":
+        return (
+          (this.player.textTracks() ? this.player.textTracks().length : 0) + 1
+        ); // +1 for "Off"
+      case "quality":
+        return this.player.qualityLevels
+          ? this.player.qualityLevels().length
+          : 0;
       default:
         return 0;
     }
@@ -346,17 +357,23 @@ export class RemoteControlHandler {
   renderMenu(title, items) {
     this.removeMenuUI();
 
-    const menuContainer = document.createElement('div');
-    menuContainer.className = 'remote-menu';
+    const menuContainer = document.createElement("div");
+    menuContainer.className = "remote-menu";
     menuContainer.innerHTML = `
       <div class="remote-menu-content">
         <h3 class="remote-menu-title">${title}</h3>
         <ul class="remote-menu-list">
-          ${items.map((item, index) => `
-            <li class="remote-menu-item ${index === this.selectedIndex ? 'selected' : ''} ${item.active ? 'active' : ''}">
+          ${items
+            .map(
+              (item, index) => `
+            <li class="remote-menu-item ${
+              index === this.selectedIndex ? "selected" : ""
+            } ${item.active ? "active" : ""}">
               ${item.label}
             </li>
-          `).join('')}
+          `
+            )
+            .join("")}
         </ul>
         <div class="remote-menu-hint">Use ↑↓ to navigate, Enter to select, Esc to close</div>
       </div>
@@ -366,18 +383,18 @@ export class RemoteControlHandler {
   }
 
   updateMenuUI() {
-    const items = document.querySelectorAll('.remote-menu-item');
+    const items = document.querySelectorAll(".remote-menu-item");
     items.forEach((item, index) => {
       if (index === this.selectedIndex) {
-        item.classList.add('selected');
+        item.classList.add("selected");
       } else {
-        item.classList.remove('selected');
+        item.classList.remove("selected");
       }
     });
   }
 
   removeMenuUI() {
-    const menu = document.querySelector('.remote-menu');
+    const menu = document.querySelector(".remote-menu");
     if (menu) {
       menu.remove();
     }
