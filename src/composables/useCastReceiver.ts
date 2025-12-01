@@ -26,8 +26,7 @@ export function useCastReceiver() {
 
       const options = new cast.framework.CastReceiverOptions();
       options.useShakaForHls = true;
-      options.disableIdleTimeout = false;
-      options.maxInactivity = settingsStore.maxInactivity;
+      options.disableIdleTimeout = true;
 
       // Set up message interceptors
       setupMessageInterceptors();
