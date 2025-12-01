@@ -75,6 +75,12 @@ export function useCastReceiver() {
       cast.framework.messages.MessageType.EDIT_TRACKS_INFO,
       handleEditTracksInfo
     );
+
+    // Intercept GET_STATUS request
+    playerManager.value.setMessageInterceptor(
+      cast.framework.messages.MessageType.GET_STATUS,
+      handleGetStatus
+    );
   }
 
   function handleLoadRequest(loadRequestData: any) {
@@ -170,6 +176,11 @@ export function useCastReceiver() {
       });
     }
 
+    return data;
+  }
+
+  function handleGetStatus(data: any) {
+    console.log("Cast GET_STATUS command", JSON.stringify(data));
     return data;
   }
 

@@ -3,6 +3,7 @@ import { onMounted, onUnmounted } from "vue";
 import { useLogStore } from "../stores/logStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { usePlayerStore } from "../stores/playerStore";
+import { eventBus } from "../utils/eventBus";
 
 const logStore = useLogStore();
 const settingsStore = useSettingsStore();
@@ -35,10 +36,6 @@ function handleKeyPress(event: KeyboardEvent) {
   }
 }
 
-import { eventBus } from "../utils/eventBus";
-
-// ...
-
 function handleLoggerKeys(key: string) {
   switch (key) {
     case "ArrowUp":
@@ -49,8 +46,6 @@ function handleLoggerKeys(key: string) {
       break;
     case "Escape":
     case "Backspace":
-    case "ColorF0Red":
-      logStore.hide();
       break;
     case "c":
     case "C":
