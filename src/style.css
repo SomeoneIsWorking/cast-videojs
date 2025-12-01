@@ -36,6 +36,11 @@ body #app {
   display: block;
 }
 
+.app-state-active .splash-screen,
+.app-state-active .idle-screen {
+  display: none !important;
+}
+
 .content-state-loading .overlay,
 .content-state-loading .overlay .content-buffer,
 .content-state-loading #player {

@@ -11,8 +11,10 @@ const playerStore = usePlayerStore();
 function handleKeyPress(event: KeyboardEvent) {
   const key = event.key;
 
-  // Prevent default behavior for navigation keys
-  event.preventDefault();
+  // Don't prevent default for back/stop buttons
+  if (key !== "GoBack" && key !== "BrowserBack" && key !== "MediaStop") {
+    event.preventDefault();
+  }
 
   switch (key) {
     case "ColorF0Green":
