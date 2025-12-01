@@ -28,7 +28,6 @@ body #app {
   height: 100%;
   position: absolute;
   top: 0;
-  text-align: center;
 }
 
 /* State Handling */

@@ -1,65 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Video.js Chromecast Receiver</title>
-    
-    <!-- Video.js CSS -->
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-    
+
     <!-- Cast Receiver SDK -->
     <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
   </head>
   <body>
-    <div id="app">
-      <!-- Video.js Player Container -->
-      <video id="player" class="video-js vjs-default-skin vjs-big-play-centered"></video>
+    <!-- Vue app will mount here -->
+    <div id="app"></div>
 
-      <!-- Loading Spinner -->
-      <div class="loading-spinner"></div>
-      
-      <!-- Error Message -->
-      <div class="error-message"></div>
-
-      <!-- Media Overlay -->
-      <div class="overlay">
-        <!-- Media Metadata -->
-        <div class="media-metadata">
-          <span>
-            <img class="thumb-container" />
-          </span>
-          <span>
-            <div class="media-metadata-info">
-              <div class="media-title"></div>
-              <div class="media-description"></div>
-            </div>
-          </span>
-        </div>
-
-        <!-- Loading Bar -->
-        <div class="content-buffer">
-          <div class="loading-bar"></div>
-        </div>
-
-        <!-- Control Bar -->
-        <ul class="cast-controlbar">
-          <li id="icon-state"></li>
-          <li class="text-elapsed"></li>
-          <li class="timeslider">
-            <div class="progress-bar"></div>
-          </li>
-          <li class="text-duration"></li>
-        </ul>
-      </div>
-
-      <!-- Debug Status Indicator -->
-      <div class="status-indicator">
-        <span class="status-text">Initializing...</span>
-      </div>
-    </div>
-
-    
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
