@@ -33,13 +33,17 @@ function handleKeyPress(event: KeyboardEvent) {
   }
 }
 
+import { eventBus } from "../utils/eventBus";
+
+// ...
+
 function handleLoggerKeys(key: string) {
   switch (key) {
     case "ArrowUp":
-      logStore.scrollUp();
+      eventBus.emit("log:scroll-up");
       break;
     case "ArrowDown":
-      logStore.scrollDown();
+      eventBus.emit("log:scroll-down");
       break;
     case "Escape":
     case "Backspace":

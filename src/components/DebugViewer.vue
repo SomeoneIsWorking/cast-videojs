@@ -1,19 +1,67 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useLogStore } from "../stores/logStore";
+import { eventBus } from "../utils/eventBus";
 
 const logStore = useLogStore();
-const contentRef = ref<HTMLDivElement | null>(null);
+const logContainer = ref<HTMLElement | null>(null);
+const autoScroll = ref(true);
 
-// Watch scroll position and update the element
+// Scroll handlers
+function handleScrollUp() {
+  if (!logContainer.value) return;
+  logContainer.value.scrollTop -= 50;
+  autoScroll.value = false;
+}
+
+function handleScrollDown() {
+  if (!logContainer.value) return;
+  logContainer.value.scrollTop += 50;
+
+  // Re-enable auto-scroll if we're near the bottom
+  const { scrollTop, scrollHeight, clientHeight } = logContainer.value;
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    autoScroll.value = true;
+  }
+}
+
+// Auto-scroll to bottom when new logs arrive
 watch(
-  () => logStore.scrollPosition,
-  (newPos) => {
-    if (contentRef.value) {
-      contentRef.value.scrollTop = newPos;
+  () => logStore.logs.length,
+  () => {
+    if (autoScroll.value && logStore.visible) {
+      nextTick(() => {
+        if (logContainer.value) {
+          logContainer.value.scrollTop = logContainer.value.scrollHeight;
+        }
+      });
     }
   }
 );
+
+// Scroll to bottom when becoming visible
+watch(
+  () => logStore.visible,
+  (visible) => {
+    if (visible && autoScroll.value) {
+      nextTick(() => {
+        if (logContainer.value) {
+          logContainer.value.scrollTop = logContainer.value.scrollHeight;
+        }
+      });
+    }
+  }
+);
+
+onMounted(() => {
+  eventBus.on("log:scroll-up", handleScrollUp);
+  eventBus.on("log:scroll-down", handleScrollDown);
+});
+
+onUnmounted(() => {
+  eventBus.off("log:scroll-up", handleScrollUp);
+  eventBus.off("log:scroll-down", handleScrollDown);
+});
 
 function getLogIcon(type: string) {
   const icons = {
@@ -45,7 +93,7 @@ function escapeHtml(text: string) {
         </button>
       </div>
     </div>
-    <div ref="contentRef" class="debug-log-content">
+    <div ref="logContainer" class="debug-log-content">
       <div
         v-for="(log, index) in logStore.logs"
         :key="index"
