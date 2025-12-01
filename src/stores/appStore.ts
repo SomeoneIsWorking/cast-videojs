@@ -4,6 +4,7 @@ import { ref, computed } from "vue";
 export enum AppState {
   LOADING = "loading",
   IDLE = "idle",
+  ACTIVE = "active",
   ERROR = "error",
 }
 
@@ -42,6 +43,7 @@ export const useAppStore = defineStore("app", () => {
     const messages = {
       [AppState.LOADING]: "Initializing receiver...",
       [AppState.IDLE]: "Ready to Cast",
+      [AppState.ACTIVE]: "",
       [AppState.ERROR]: "Error occurred",
     };
     return messages[appState.value] || "";

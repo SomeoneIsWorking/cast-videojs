@@ -62,6 +62,7 @@ export function useVideoPlayer(elementId: string) {
 
   function onLoadStart() {
     console.log("Player: loadstart");
+    appStore.setAppState(AppState.ACTIVE);
     appStore.setContentState(ContentState.LOADING);
   }
 
@@ -76,6 +77,7 @@ export function useVideoPlayer(elementId: string) {
 
   function onPlaying() {
     console.log("Player: playing");
+    appStore.setAppState(AppState.ACTIVE);
     appStore.setContentState(ContentState.PLAYING);
   }
 
