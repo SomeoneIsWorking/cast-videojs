@@ -25,6 +25,7 @@ export function useCastReceiver() {
       playerStore.setPlayerManager(playerManager.value);
 
       const options = new cast.framework.CastReceiverOptions();
+      options.useShakaForHls = true;
       options.disableIdleTimeout = false;
       options.maxInactivity = settingsStore.maxInactivity;
 
