@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import Player from "video.js/dist/types/player";
+import { ref, computed, shallowRef } from "vue";
 
 interface TrackItem {
   index: number;
@@ -10,7 +11,7 @@ interface TrackItem {
 
 export const usePlayerStore = defineStore("player", () => {
   // State
-  const player = ref<any>(null);
+  const player = shallowRef<Player | null>(null);
   const playerManager = ref<any>(null);
   const menuVisible = ref(false);
   const currentMenu = ref<string | null>(null);
@@ -24,7 +25,7 @@ export const usePlayerStore = defineStore("player", () => {
   // Computed
   const audioTracks = computed<TrackItem[]>(() => {
     if (!player.value) return [];
-    const tracks = player.value.audioTracks();
+    const tracks = player.value.audioTracks().tracks_;
     if (!tracks) return []; // Keep this check as player.value.audioTracks() might return null/undefined
     const list: TrackItem[] = [];
     for (let i = 0; i < tracks.length; i++) {
@@ -41,7 +42,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   const subtitleTracks = computed<TrackItem[]>(() => {
     if (!player.value) return [];
-    const tracks = player.value.textTracks();
+    const tracks = player.value.textTracks().tracks_;
     if (!tracks) return []; // Keep this check as player.value.textTracks() might return null/undefined
     const list: TrackItem[] = [];
     for (let i = 0; i < tracks.length; i++) {
@@ -59,28 +60,9 @@ export const usePlayerStore = defineStore("player", () => {
     return list;
   });
 
-  const qualityLevels = computed(() => {
-    if (!player.value || !player.value.qualityLevels) return [];
-    const levels = player.value.qualityLevels();
-    if (!levels) return [];
-
-    const list = [];
-    for (let i = 0; i < levels.length; i++) {
-      const level = levels[i];
-      list.push({
-        index: i,
-        label: `${level.height}p`,
-        active: level.enabled,
-        width: level.width,
-        height: level.height,
-      });
-    }
-    return list;
-  });
-
   const currentAudioTrackIndex = computed(() => {
     if (!player.value) return 0;
-    const tracks = player.value.audioTracks();
+    const tracks = player.value.audioTracks().tracks_;
     if (!tracks) return 0;
 
     for (let i = 0; i < tracks.length; i++) {
@@ -91,7 +73,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   const currentSubtitleTrackIndex = computed(() => {
     if (!player.value) return 0;
-    const tracks = player.value.textTracks();
+    const tracks = player.value.textTracks().tracks_;
     if (!tracks) return 0;
 
     for (let i = 0; i < tracks.length; i++) {
@@ -100,19 +82,8 @@ export const usePlayerStore = defineStore("player", () => {
     return 0;
   });
 
-  const currentQualityIndex = computed(() => {
-    if (!player.value || !player.value.qualityLevels) return 0;
-    const levels = player.value.qualityLevels();
-    if (!levels) return 0;
-
-    for (let i = 0; i < levels.length; i++) {
-      if (levels[i].enabled) return i;
-    }
-    return 0;
-  });
-
   // Actions
-  function setPlayer(playerInstance: any) {
+  function setPlayer(playerInstance: Player) {
     player.value = playerInstance;
   }
 
@@ -120,7 +91,7 @@ export const usePlayerStore = defineStore("player", () => {
     playerManager.value = manager;
   }
 
-  function showMenu(menu: "audio" | "subtitles" | "quality") {
+  function showMenu(menu: "audio" | "subtitles") {
     currentMenu.value = menu;
     menuVisible.value = true;
 
@@ -129,8 +100,6 @@ export const usePlayerStore = defineStore("player", () => {
       selectedIndex.value = currentAudioTrackIndex.value;
     } else if (menu === "subtitles") {
       selectedIndex.value = currentSubtitleTrackIndex.value;
-    } else if (menu === "quality") {
-      selectedIndex.value = currentQualityIndex.value;
     }
   }
 
@@ -139,7 +108,7 @@ export const usePlayerStore = defineStore("player", () => {
     currentMenu.value = null;
   }
 
-  function toggleMenu(menu: "audio" | "subtitles" | "quality") {
+  function toggleMenu(menu: "audio" | "subtitles") {
     if (currentMenu.value === menu) {
       closeMenu();
     } else {
@@ -160,8 +129,6 @@ export const usePlayerStore = defineStore("player", () => {
       maxIndex = audioTracks.value.length - 1;
     } else if (currentMenu.value === "subtitles") {
       maxIndex = subtitleTracks.value.length - 1;
-    } else if (currentMenu.value === "quality") {
-      maxIndex = qualityLevels.value.length - 1;
     }
 
     selectedIndex.value = Math.min(maxIndex, selectedIndex.value + 1);
@@ -169,7 +136,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   function selectAudioTrack(index: number) {
     if (!player.value) return;
-    const tracks = player.value.audioTracks();
+    const tracks = player.value.audioTracks().tracks_;
     if (!tracks || index >= tracks.length) return;
 
     for (let i = 0; i < tracks.length; i++) {
@@ -181,7 +148,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   function selectSubtitleTrack(index: number) {
     if (!player.value) return;
-    const tracks = player.value.textTracks();
+    const tracks = player.value.textTracks().tracks_;
     if (!tracks) return;
 
     // Index 0 = Off
@@ -196,22 +163,6 @@ export const usePlayerStore = defineStore("player", () => {
     console.log("Selected subtitle track:", index);
   }
 
-  function selectQuality(index: number) {
-    if (!player.value || !player.value.qualityLevels) return;
-    const levels = player.value.qualityLevels();
-    if (!levels || index >= levels.length) return;
-
-    // Disable all quality levels
-    for (let i = 0; i < levels.length; i++) {
-      levels[i].enabled = false;
-    }
-
-    // Enable selected quality
-    levels[index].enabled = true;
-
-    console.log("Selected quality:", index);
-  }
-
   function selectCurrentMenuItem() {
     if (!menuVisible.value) return;
 
@@ -219,8 +170,6 @@ export const usePlayerStore = defineStore("player", () => {
       selectAudioTrack(selectedIndex.value);
     } else if (currentMenu.value === "subtitles") {
       selectSubtitleTrack(selectedIndex.value);
-    } else if (currentMenu.value === "quality") {
-      selectQuality(selectedIndex.value);
     }
 
     closeMenu();
@@ -228,14 +177,14 @@ export const usePlayerStore = defineStore("player", () => {
 
   function seekBackward() {
     if (!player.value) return;
-    const currentTime = player.value.currentTime();
+    const currentTime = player.value.currentTime()!;
     player.value.currentTime(Math.max(0, currentTime - 10));
   }
 
   function seekForward() {
     if (!player.value) return;
-    const currentTime = player.value.currentTime();
-    const duration = player.value.duration();
+    const currentTime = player.value.currentTime()!;
+    const duration = player.value.duration()!;
     player.value.currentTime(Math.min(duration, currentTime + 10));
   }
 
@@ -274,7 +223,7 @@ export const usePlayerStore = defineStore("player", () => {
     if (media.tracks) {
       media.tracks.forEach((track: any) => {
         if (track.type === "TEXT") {
-          player.value.addRemoteTextTrack(
+          player.value!.addRemoteTextTrack(
             {
               kind: track.subtype || "subtitles",
               label: track.name,
@@ -302,11 +251,8 @@ export const usePlayerStore = defineStore("player", () => {
     // Computed
     audioTracks,
     subtitleTracks,
-    qualityLevels,
     currentAudioTrackIndex,
     currentSubtitleTrackIndex,
-    currentQualityIndex,
-
     // Actions
     setPlayer,
     setPlayerManager,
@@ -317,7 +263,6 @@ export const usePlayerStore = defineStore("player", () => {
     navigateDown,
     selectAudioTrack,
     selectSubtitleTrack,
-    selectQuality,
     selectCurrentMenuItem,
     seekBackward,
     seekForward,

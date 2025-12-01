@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { usePlayerStore } from "./playerStore";
 
-type MenuType = "main" | "audio" | "subtitles" | "quality";
+type MenuType = "main" | "audio" | "subtitles";
 
 export const useSettingsStore = defineStore("settings", () => {
   const playerStore = usePlayerStore();
@@ -25,7 +25,6 @@ export const useSettingsStore = defineStore("settings", () => {
   const mainMenuItems = computed(() => [
     { id: "audio", label: "Audio Track" },
     { id: "subtitles", label: "Subtitles" },
-    { id: "quality", label: "Quality" },
   ]);
 
   // Current menu items based on active menu
@@ -37,8 +36,6 @@ export const useSettingsStore = defineStore("settings", () => {
         return playerStore.audioTracks;
       case "subtitles":
         return playerStore.subtitleTracks;
-      case "quality":
-        return playerStore.qualityLevels;
       default:
         return [];
     }
@@ -52,8 +49,6 @@ export const useSettingsStore = defineStore("settings", () => {
         return "Audio Track";
       case "subtitles":
         return "Subtitles";
-      case "quality":
-        return "Quality";
       default:
         return "";
     }
@@ -108,8 +103,6 @@ export const useSettingsStore = defineStore("settings", () => {
           selectedIndex.value = playerStore.currentAudioTrackIndex;
         } else if (selected.id === "subtitles") {
           selectedIndex.value = playerStore.currentSubtitleTrackIndex;
-        } else if (selected.id === "quality") {
-          selectedIndex.value = playerStore.currentQualityIndex;
         }
       }
     }
@@ -125,8 +118,6 @@ export const useSettingsStore = defineStore("settings", () => {
         playerStore.selectAudioTrack(selectedIndex.value);
       } else if (currentMenu.value === "subtitles") {
         playerStore.selectSubtitleTrack(selectedIndex.value);
-      } else if (currentMenu.value === "quality") {
-        playerStore.selectQuality(selectedIndex.value);
       }
       // Go back to main menu after selection
       currentMenu.value = "main";

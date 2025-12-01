@@ -37,9 +37,6 @@ The receiver supports TV remote control navigation with the following features:
 - **Arrow Keys**: Navigate menus (Up/Down) or seek (Left/Right)
 - **Enter**: Select menu item or toggle play/pause
 - **Escape/Backspace**: Close menu
-- **A**: Toggle audio track menu
-- **S**: Toggle subtitle menu
-- **Q**: Toggle quality menu
 - **MediaPlayPause**: Toggle play/pause
 - **MediaRewind/MediaTrackPrevious**: Seek backward 10 seconds
 - **MediaFastForward/MediaTrackNext**: Seek forward 10 seconds
@@ -123,7 +120,6 @@ Handles TV remote input for:
 - Track menu navigation
 - Audio track selection
 - Subtitle track selection
-- Quality level selection
 - Playback control
 
 ## Customization

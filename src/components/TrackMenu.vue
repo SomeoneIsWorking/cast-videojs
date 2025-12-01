@@ -10,8 +10,6 @@ const menuTitle = computed(() => {
       return "Audio Tracks";
     case "subtitles":
       return "Subtitles";
-    case "quality":
-      return "Quality";
     default:
       return "";
   }
@@ -23,8 +21,6 @@ const menuItems = computed(() => {
       return playerStore.audioTracks;
     case "subtitles":
       return playerStore.subtitleTracks;
-    case "quality":
-      return playerStore.qualityLevels;
     default:
       return [];
   }
