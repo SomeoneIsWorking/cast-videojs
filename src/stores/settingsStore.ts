@@ -15,7 +15,6 @@ export const useSettingsStore = defineStore("settings", () => {
   // General Settings
   const debugMode = ref(false);
   const autoplay = ref(true);
-  const maxInactivity = ref(3600);
 
   function setDebugMode(value: boolean) {
     debugMode.value = value;
@@ -132,7 +131,6 @@ export const useSettingsStore = defineStore("settings", () => {
     selectedIndex,
     debugMode,
     autoplay,
-    maxInactivity,
 
     // Computed
     currentMenuItems,
