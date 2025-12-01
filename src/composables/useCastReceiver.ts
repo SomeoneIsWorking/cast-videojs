@@ -143,7 +143,7 @@ export function useCastReceiver() {
     const activeTrackIds = data.activeTrackIds;
 
     // Handle text tracks
-    const textTracks = playerStore.player.textTracks();
+    const textTracks = playerStore.player.textTracks().tracks_;
     for (let i = 0; i < textTracks.length; i++) {
       textTracks[i].mode = "disabled";
     }
@@ -157,7 +157,7 @@ export function useCastReceiver() {
     });
 
     // Handle audio tracks
-    const audioTracks = playerStore.player.audioTracks();
+    const audioTracks = playerStore.player.audioTracks().tracks_;
     if (audioTracks) {
       activeTrackIds.forEach((trackId: any) => {
         for (let i = 0; i < audioTracks.length; i++) {

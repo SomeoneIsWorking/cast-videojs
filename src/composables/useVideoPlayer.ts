@@ -1,10 +1,11 @@
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted, shallowRef } from "vue";
 import videojs from "video.js";
 import { usePlayerStore } from "../stores/playerStore";
 import { useLogStore } from "../stores/logStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useAppStore } from "../stores/appStore";
 import { ContentState, AppState } from "../stores/appStore";
+import Player from "video.js/dist/types/player";
 
 export function useVideoPlayer(elementId: string) {
   const playerStore = usePlayerStore();
@@ -12,7 +13,7 @@ export function useVideoPlayer(elementId: string) {
   const settingsStore = useSettingsStore();
   const appStore = useAppStore();
 
-  const player = ref<any>(null);
+  const player = shallowRef<Player | null>(null);
   const isReady = ref(false);
 
   function initPlayer() {
@@ -25,7 +26,7 @@ export function useVideoPlayer(elementId: string) {
     });
 
     // Set player in store
-    playerStore.setPlayer(player.value);
+    playerStore.setPlayer(player.value!);
 
     // Set up event listeners
     setupEventListeners();
@@ -90,8 +91,8 @@ export function useVideoPlayer(elementId: string) {
 
   function onTimeUpdate() {
     if (player.value) {
-      appStore.setCurrentTime(player.value.currentTime());
-      appStore.setDuration(player.value.duration());
+      appStore.setCurrentTime(player.value.currentTime()!);
+      appStore.setDuration(player.value.duration()!);
       appStore.resetUserActivityTimeout();
     }
   }
@@ -122,7 +123,7 @@ export function useVideoPlayer(elementId: string) {
     let trackId = 1;
 
     // Add text tracks
-    const textTracks = player.value.textTracks();
+    const textTracks = player.value.textTracks().tracks_;
     for (let i = 0; i < textTracks.length; i++) {
       const track = textTracks[i];
       tracks.push({
@@ -136,7 +137,7 @@ export function useVideoPlayer(elementId: string) {
     }
 
     // Add audio tracks
-    const audioTracks = player.value.audioTracks();
+    const audioTracks = player.value.audioTracks().tracks_;
     if (audioTracks) {
       for (let i = 0; i < audioTracks.length; i++) {
         const track = audioTracks[i];
