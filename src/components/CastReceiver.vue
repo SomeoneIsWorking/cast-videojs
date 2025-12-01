@@ -1,223 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import { useVideoPlayer } from "../composables/useVideoPlayer";
-import { useCastReceiver } from "../composables/useCastReceiver";
-import { useConsoleInterceptor } from "../composables/useConsoleInterceptor";
-import { useSettingsStore } from "../stores/settingsStore";
-import { useLogStore } from "../stores/logStore";
+import { onMounted } from "vue";
+import { usePlayerStore } from "../stores/playerStore";
+import { useAppStore } from "../stores/appStore";
+import { useAppInitializer } from "@/composables/useAppInitializer";
 
-// App states
-enum AppState {
-  LOADING = "loading",
-  IDLE = "idle",
-  ERROR = "error",
-}
-
-// Content states
-enum ContentState {
-  LOADING = "loading",
-  BUFFERING = "buffering",
-  PLAYING = "playback",
-  PAUSED = "paused",
-}
-
-const settingsStore = useSettingsStore();
-const logStore = useLogStore();
-
-// State
-const appState = ref<AppState>(AppState.LOADING);
-const contentState = ref<ContentState | null>(null);
-const mediaTitle = ref("");
-const mediaDescription = ref("");
-const thumbUrl = ref("");
-const currentTime = ref(0);
-const duration = ref(0);
-const userInactive = ref(false);
-const seekFlag = ref(false);
-const errorMessage = ref("");
-
-let userActivityTimeout: NodeJS.Timeout | null = null;
-
-// Composables
-const { player, isReady, initPlayer, loadMedia } = useVideoPlayer("player");
-const { castContext, playerManager, initCastReceiver } = useCastReceiver();
-useConsoleInterceptor();
-
-// Computed
-const appStateClass = computed(() => `app-state-${appState.value}`);
-const contentStateClass = computed(() =>
-  contentState.value ? `content-state-${contentState.value}` : ""
-);
-const progress = computed(() => {
-  if (!duration.value || !currentTime.value) return 0;
-  return (currentTime.value / duration.value) * 100;
-});
-
-const statusText = computed(() => {
-  const messages = {
-    [AppState.LOADING]: "Initializing receiver...",
-    [AppState.IDLE]: "Ready to Cast",
-    [AppState.ERROR]: "Error occurred",
-  };
-  return messages[appState.value] || "";
-});
-
-const isPlaying = computed(() => contentState.value === ContentState.PLAYING);
-
-// Methods
-function formatTime(seconds: number): string {
-  if (isNaN(seconds) || seconds === Infinity) {
-    return "0:00";
-  }
-
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  }
-  return `${minutes}:${secs.toString().padStart(2, "0")}`;
-}
-
-function resetUserActivityTimeout() {
-  userInactive.value = false;
-
-  if (userActivityTimeout) {
-    clearTimeout(userActivityTimeout);
-  }
-
-  userActivityTimeout = setTimeout(() => {
-    userInactive.value = true;
-  }, 5000);
-}
-
-function handleLoadRequest(loadRequestData: any) {
-  const media = loadRequestData.media;
-
-  if (!media || !media.contentId) {
-    console.error("Invalid media in load request");
-    return;
-  }
-
-  // Update metadata
-  if (media.metadata) {
-    if (media.metadata.title) {
-      mediaTitle.value = media.metadata.title;
-    }
-    if (media.metadata.subtitle) {
-      mediaDescription.value = media.metadata.subtitle;
-    }
-    if (media.metadata.images && media.metadata.images.length > 0) {
-      thumbUrl.value = media.metadata.images[0].url;
-    }
-  }
-
-  // Load media
-  contentState.value = ContentState.LOADING;
-  loadMedia(media);
-
-  // Handle autoplay
-  if (loadRequestData.autoplay && settingsStore.autoplay) {
-    console.log("Autoplay requested");
-    setTimeout(() => {
-      player.value?.play();
-    }, 100);
-  }
-}
-
-function setupPlayerListeners() {
-  if (!player.value) return;
-
-  player.value.on("loadstart", () => {
-    contentState.value = ContentState.LOADING;
-  });
-
-  player.value.on("playing", () => {
-    contentState.value = ContentState.PLAYING;
-  });
-
-  player.value.on("pause", () => {
-    contentState.value = ContentState.PAUSED;
-  });
-
-  player.value.on("waiting", () => {
-    contentState.value = ContentState.BUFFERING;
-  });
-
-  player.value.on("timeupdate", () => {
-    if (player.value) {
-      currentTime.value = player.value.currentTime();
-      duration.value = player.value.duration();
-      resetUserActivityTimeout();
-    }
-  });
-
-  player.value.on("ended", () => {
-    contentState.value = null;
-    appState.value = AppState.IDLE;
-  });
-
-  player.value.on("error", (e: any) => {
-    const error = player.value?.error();
-    errorMessage.value = error
-      ? `Error ${error.code}: ${error.message}`
-      : "An error occurred during playback";
-    appState.value = AppState.ERROR;
-    logStore.show();
-  });
-}
-
-async function initialize() {
-  try {
-    // Check for debug mode from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const debugMode = urlParams.get("debug") === "true";
-
-    if (debugMode) {
-      settingsStore.setDebugMode(true);
-      if (typeof cast !== "undefined") {
-        cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
-      }
-      console.log("Debug mode enabled");
-      logStore.show();
-    }
-
-    // Initialize player
-    initPlayer();
-    setupPlayerListeners();
-
-    // Initialize Cast Receiver
-    await initCastReceiver();
-
-    // Set up custom load handler
-    if (playerManager.value) {
-      const originalInterceptor = playerManager.value.setMessageInterceptor(
-        cast.framework.messages.MessageType.LOAD,
-        (loadRequestData: any) => {
-          loadRequestData.media.hlsSegmentFormat =
-            cast.framework.messages.HlsSegmentFormat.TS;
-          handleLoadRequest(loadRequestData);
-          return loadRequestData;
-        }
-      );
-    }
-
-    // Transition to IDLE state
-    setTimeout(() => {
-      appState.value = AppState.IDLE;
-      console.log("Receiver ready - waiting for cast");
-    }, 500);
-  } catch (e) {
-    console.error("Initialization error:", e);
-    errorMessage.value =
-      e instanceof Error ? e.message : "Initialization failed";
-    appState.value = AppState.ERROR;
-    logStore.show();
-  }
-}
+const appStore = useAppStore();
+const playerStore = usePlayerStore();
+const { initialize } = useAppInitializer();
 
 onMounted(() => {
   initialize();
@@ -228,55 +17,49 @@ onMounted(() => {
   <div
     id="app"
     :class="[
-      appStateClass,
-      contentStateClass,
-      { 'flag-user-inactive': userInactive, 'flag-seek': seekFlag },
+      appStore.appStateClass,
+      appStore.contentStateClass,
+      { 'flag-user-inactive': appStore.userInactive, 'flag-seek': appStore.seekFlag },
     ]"
   >
-    <!-- Loading State -->
     <div class="splash-screen">
-      <div class="status-text">{{ statusText }}</div>
+      <div class="status-text">{{ appStore.statusText }}</div>
     </div>
 
-    <!-- Idle State -->
     <div class="idle-screen">
       <div class="logo-cast"></div>
-      <div class="status-text">{{ statusText }}</div>
+      <div class="status-text">{{ appStore.statusText }}</div>
     </div>
 
-    <!-- Video Player -->
     <video id="player" class="video-js"></video>
 
-    <!-- Media Info Overlay -->
     <div class="media-info">
       <img
-        v-if="thumbUrl"
-        :src="thumbUrl"
+        v-if="playerStore.thumbUrl"
+        :src="playerStore.thumbUrl"
         alt="Thumbnail"
         class="thumb-container"
       />
       <div class="media-text">
-        <div class="media-title">{{ mediaTitle }}</div>
-        <div class="media-description">{{ mediaDescription }}</div>
+        <div class="media-title">{{ playerStore.mediaTitle }}</div>
+        <div class="media-description">{{ playerStore.mediaDescription }}</div>
       </div>
     </div>
 
-    <!-- Playback Controls Overlay -->
     <div class="controls-overlay">
       <div class="progress-container">
-        <div class="progress-bar" :style="{ width: `${progress}%` }"></div>
+        <div class="progress-bar" :style="{ width: `${appStore.progress}%` }"></div>
       </div>
       <div class="time-display">
-        <span class="text-elapsed">{{ formatTime(currentTime) }}</span>
-        <span class="text-duration">{{ formatTime(duration) }}</span>
+        <span class="text-elapsed">{{ appStore.formatTime(appStore.currentTime) }}</span>
+        <span class="text-duration">{{ appStore.formatTime(appStore.duration) }}</span>
       </div>
-      <div id="icon-state" :class="{ playing: isPlaying }"></div>
+      <div id="icon-state" :class="{ playing: appStore.isPlaying }"></div>
     </div>
 
-    <!-- Error State -->
     <div class="error-screen">
       <div class="error-icon">⚠️</div>
-      <div class="error-message">{{ errorMessage }}</div>
+      <div class="error-message">{{ appStore.errorMessage }}</div>
     </div>
   </div>
 </template>

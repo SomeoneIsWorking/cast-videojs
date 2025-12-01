@@ -3,11 +3,14 @@ import videojs from "video.js";
 import { usePlayerStore } from "../stores/playerStore";
 import { useLogStore } from "../stores/logStore";
 import { useSettingsStore } from "../stores/settingsStore";
+import { useAppStore } from "../stores/appStore";
+import { ContentState, AppState } from "../stores/appStore";
 
 export function useVideoPlayer(elementId: string) {
   const playerStore = usePlayerStore();
   const logStore = useLogStore();
   const settingsStore = useSettingsStore();
+  const appStore = useAppStore();
 
   const player = ref<any>(null);
   const isReady = ref(false);
@@ -18,15 +21,7 @@ export function useVideoPlayer(elementId: string) {
       autoplay: true,
       preload: "auto",
       fluid: false,
-      fill: true,
-      html5: {
-        vhs: {
-          overrideNative: true,
-        },
-        nativeAudioTracks: false,
-        nativeVideoTracks: false,
-        nativeTextTracks: false,
-      },
+      fill: true
     });
 
     // Set player in store
@@ -66,6 +61,7 @@ export function useVideoPlayer(elementId: string) {
 
   function onLoadStart() {
     console.log("Player: loadstart");
+    appStore.setContentState(ContentState.LOADING);
   }
 
   function onLoadedMetadata() {
@@ -79,33 +75,42 @@ export function useVideoPlayer(elementId: string) {
 
   function onPlaying() {
     console.log("Player: playing");
+    appStore.setContentState(ContentState.PLAYING);
   }
 
   function onPause() {
     console.log("Player: pause");
+    appStore.setContentState(ContentState.PAUSED);
   }
 
   function onWaiting() {
     console.log("Player: waiting");
+    appStore.setContentState(ContentState.BUFFERING);
   }
 
   function onTimeUpdate() {
-    // Time update handled by PlayerDisplay component
+    if (player.value) {
+      appStore.setCurrentTime(player.value.currentTime());
+      appStore.setDuration(player.value.duration());
+      appStore.resetUserActivityTimeout();
+    }
   }
 
   function onEnded() {
     console.log("Player: ended");
+    appStore.setContentState(null);
+    appStore.setAppState(AppState.IDLE);
   }
 
   function onError(e: any) {
     console.error("Player error:", e);
     const error = player.value?.error();
 
-    let errorMessage = "An error occurred during playback";
-    if (error) {
-      errorMessage = `Error ${error.code}: ${error.message}`;
-    }
+    const errorMessage = error
+      ? `Error ${error.code}: ${error.message}`
+      : "An error occurred during playback";
 
+    appStore.setError(errorMessage);
     logStore.addLog("error", [errorMessage]);
     logStore.show();
   }
@@ -148,36 +153,6 @@ export function useVideoPlayer(elementId: string) {
     console.log("Available tracks:", tracks);
   }
 
-  function loadMedia(media: any) {
-    if (!player.value) return;
-
-    const sources = [
-      {
-        src: media.contentId,
-        type: media.contentType || "application/x-mpegURL",
-      },
-    ];
-
-    player.value.src(sources);
-
-    // Handle text tracks (subtitles)
-    if (media.tracks) {
-      media.tracks.forEach((track: any) => {
-        if (track.type === "TEXT") {
-          player.value.addRemoteTextTrack(
-            {
-              kind: track.subtype || "subtitles",
-              label: track.name,
-              src: track.trackContentId,
-              language: track.language,
-            },
-            false
-          );
-        }
-      });
-    }
-  }
-
   function dispose() {
     if (player.value) {
       player.value.dispose();
@@ -194,7 +169,6 @@ export function useVideoPlayer(elementId: string) {
     player,
     isReady,
     initPlayer,
-    loadMedia,
     dispose,
   };
 }
