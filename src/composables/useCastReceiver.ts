@@ -90,17 +90,20 @@ export function useCastReceiver() {
       return loadRequestData;
     }
 
-    // Check for debug mode in content URL
-    try {
-      const contentUrl = new URL(media.contentId);
-      const debugParam = contentUrl.searchParams.get("debug");
-      if (debugParam === "true" && !settingsStore.debugMode) {
-        settingsStore.setDebugMode(true);
-        cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
-        console.log("Debug mode enabled from content URL");
-      }
-    } catch (e) {
-      // Not a valid URL, ignore
+    // Update metadata in store
+    if (media.metadata) {
+      playerStore.updateMetadata(media.metadata);
+    }
+
+    // Load media
+    playerStore.loadMedia(media);
+
+    // Handle autoplay
+    if (loadRequestData.autoplay && settingsStore.autoplay) {
+      console.log("Autoplay requested");
+      setTimeout(() => {
+        playerStore.player?.play();
+      }, 100);
     }
 
     return loadRequestData;

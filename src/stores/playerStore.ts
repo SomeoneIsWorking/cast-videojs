@@ -16,6 +16,11 @@ export const usePlayerStore = defineStore("player", () => {
   const currentMenu = ref<string | null>(null);
   const selectedIndex = ref(0);
 
+  // Metadata
+  const mediaTitle = ref("");
+  const mediaDescription = ref("");
+  const thumbUrl = ref("");
+
   // Computed
   const audioTracks = computed<TrackItem[]>(() => {
     if (!player.value) return [];
@@ -244,6 +249,45 @@ export const usePlayerStore = defineStore("player", () => {
     }
   }
 
+  function updateMetadata(metadata: any) {
+    if (!metadata) return;
+    if (metadata.title) mediaTitle.value = metadata.title;
+    if (metadata.subtitle) mediaDescription.value = metadata.subtitle;
+    if (metadata.images && metadata.images.length > 0) {
+      thumbUrl.value = metadata.images[0].url;
+    }
+  }
+
+  function loadMedia(media: any) {
+    if (!player.value) return;
+
+    const sources = [
+      {
+        src: media.contentId,
+        type: media.contentType || "application/x-mpegURL",
+      },
+    ];
+
+    player.value.src(sources);
+
+    // Handle text tracks (subtitles)
+    if (media.tracks) {
+      media.tracks.forEach((track: any) => {
+        if (track.type === "TEXT") {
+          player.value.addRemoteTextTrack(
+            {
+              kind: track.subtype || "subtitles",
+              label: track.name,
+              src: track.trackContentId,
+              language: track.language,
+            },
+            false
+          );
+        }
+      });
+    }
+  }
+
   return {
     // State
     player,
@@ -251,6 +295,9 @@ export const usePlayerStore = defineStore("player", () => {
     menuVisible,
     currentMenu,
     selectedIndex,
+    mediaTitle,
+    mediaDescription,
+    thumbUrl,
 
     // Computed
     audioTracks,
@@ -275,5 +322,7 @@ export const usePlayerStore = defineStore("player", () => {
     seekBackward,
     seekForward,
     togglePlayPause,
+    updateMetadata,
+    loadMedia,
   };
 });

@@ -64,6 +64,32 @@ export const useLogStore = defineStore("log", () => {
     visible.value = false;
   }
 
+  function hijackConsole() {
+    const originalConsole = {
+      log: console.log,
+      warn: console.warn,
+      error: console.error,
+      info: console.info,
+    };
+
+    console.log = (...args: any[]) => {
+      addLog("log", args);
+      originalConsole.log.apply(console, args);
+    };
+    console.warn = (...args: any[]) => {
+      addLog("warn", args);
+      originalConsole.warn.apply(console, args);
+    };
+    console.error = (...args: any[]) => {
+      addLog("error", args);
+      originalConsole.error.apply(console, args);
+    };
+    console.info = (...args: any[]) => {
+      addLog("info", args);
+      originalConsole.info.apply(console, args);
+    };
+  }
+
   return {
     // State
     logs,
@@ -79,5 +105,6 @@ export const useLogStore = defineStore("log", () => {
     toggle,
     show,
     hide,
+    hijackConsole,
   };
 });
