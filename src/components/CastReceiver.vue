@@ -27,7 +27,7 @@ onMounted(() => {
       <div class="status-text">{{ appStore.statusText }}</div>
     </div>
 
-    <video id="player" controls></video>
+    <video id="player" controls :class="{ 'show-controls': playerStore.showControls }"></video>
 
     <div class="media-info">
       <img

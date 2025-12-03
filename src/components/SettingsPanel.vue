@@ -28,6 +28,11 @@ const settingsStore = useSettingsStore();
         >
           <span class="settings-label">{{ item.label }}</span>
           <span
+            v-if="'value' in item && item.value"
+            class="settings-value"
+            >{{ item.value }}</span
+          >
+          <span
             v-if="settingsStore.currentMenu === 'main'"
             class="settings-arrow"
             >→</span
@@ -43,6 +48,9 @@ const settingsStore = useSettingsStore();
       <div class="settings-hint">
         <template v-if="settingsStore.currentMenu === 'main'">
           Use ↑↓ to navigate, Enter or → to select, Esc to close
+        </template>
+        <template v-else-if="settingsStore.currentMenu === 'subtitle-settings'">
+          Use ↑↓ to navigate, ←→ to adjust values, Esc to go back
         </template>
         <template v-else>
           Use ↑↓ to navigate, Enter to select, ← to go back

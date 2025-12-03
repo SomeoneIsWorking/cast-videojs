@@ -49,6 +49,7 @@ body #app {
 }
 
 #player:hover::-webkit-media-controls,
+#player.show-controls::-webkit-media-controls,
 .app-state-paused #player::-webkit-media-controls {
   opacity: 1;
 }
@@ -411,6 +412,13 @@ body #app {
 
 .settings-label {
   font-weight: 500;
+}
+
+.settings-value {
+  color: #4caf50;
+  margin-left: auto;
+  margin-right: 0.5rem;
+  font-weight: 600;
 }
 
 .settings-arrow {
