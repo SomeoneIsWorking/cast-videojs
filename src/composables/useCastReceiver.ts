@@ -32,6 +32,9 @@ export function useCastReceiver() {
       // Set up message interceptors
       setupMessageInterceptors();
 
+      // Set up CAF event listeners
+      setupCAFEventListeners();
+
       // Start the receiver
       castContext.value.start(options);
       console.log("Cast Receiver started");
@@ -94,43 +97,96 @@ export function useCastReceiver() {
       playerStore.updateMetadata(media.metadata);
     }
 
-    // Load media into Video.js only
+    // Load into Video.js player
+    // This keeps Video.js and CAF in sync - both will have the same media loaded
     playerStore.loadMedia(media);
 
-    return media;
+    // Return the loadRequestData so CAF can track the media state
+    return loadRequestData;
   }
 
   function handlePlayRequest(data: any) {
-    playerStore.player?.play();
+    // CAF handles play through the bound media element
+    // Just show controls briefly for visual feedback
+    playerStore.showControlsBriefly();
     return data;
   }
 
   function handlePauseRequest(data: any) {
-    playerStore.player?.pause();
+    // CAF handles pause through the bound media element
+    playerStore.showControlsBriefly();
     return data;
   }
 
   function handleSeekRequest(data: any) {
+    // CAF handles seeking through the bound media element
+    // Show controls briefly for visual feedback
     if (data.currentTime !== undefined) {
-      playerStore.player?.currentTime(data.currentTime);
       playerStore.showControlsBriefly();
     }
     return data;
   }
 
   function handleEditTracksInfo(data: any) {
-    console.log("Edit tracks info:", data);
-
-    if (!data || !data.activeTrackIds || !playerStore.player) {
-      return data;
-    }
+    console.log("Edit tracks info:", data)
 
     return data;
+  }
+
+  function setupCAFEventListeners() {
+    if (!playerManager.value) return;
+
+    // Listen for CAF events
+    playerManager.value.addEventListener(
+      cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
+      () => {
+        console.log('CAF: Player load complete');
+      }
+    );
+
+    playerManager.value.addEventListener(
+      cast.framework.events.EventType.ERROR,
+      (event: any) => {
+        console.error('CAF Error:', event.detailedErrorCode, event.error);
+        logStore.addLog('error', ['CAF Error:', event.detailedErrorCode]);
+      }
+    );
+  }
+
+  function syncVideoJsStateToCAF() {
+    if (!playerManager.value || !playerStore.player) return;
+
+    const player = playerStore.player;
+
+    // Sync Video.js playback state to CAF's PlayerManager
+    // This ensures the sender UI shows correct state
+    player.on('play', () => {
+      playerManager.value.broadcastStatus(true);
+    });
+
+    player.on('pause', () => {
+      playerManager.value.broadcastStatus(true);
+    });
+
+    player.on('timeupdate', () => {
+      playerManager.value.broadcastStatus(true);
+    });
+
+    player.on('ended', () => {
+      playerManager.value.broadcastStatus(true);
+    });
+
+    player.on('loadedmetadata', () => {
+      playerManager.value.broadcastStatus(true);
+    });
+
+    console.log('Video.js state sync to CAF enabled');
   }
 
   return {
     castContext,
     playerManager,
     initCastReceiver,
+    syncVideoJsStateToCAF,
   };
 }

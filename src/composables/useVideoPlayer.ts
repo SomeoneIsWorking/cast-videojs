@@ -26,7 +26,7 @@ export function useVideoPlayer(elementId: string) {
         vhs: {
           overrideNative: false, // Use native HLS for hardware decoding
           limitRenditionByPlayerDimensions: true,
-          bandwidth: 4194304,
+          bandwidth: 4194304, // 4 Mbps - conservative for lower-end processors
         },
         nativeAudioTracks: true,
         nativeVideoTracks: true,

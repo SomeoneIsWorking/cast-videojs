@@ -8,15 +8,19 @@ export function useAppInitializer() {
   const logStore = useLogStore();
 
   const { initPlayer } = useVideoPlayer("player");
-  const { initCastReceiver } = useCastReceiver();
+  const { initCastReceiver, syncVideoJsStateToCAF } = useCastReceiver();
 
   async function initialize() {
     try {
-      // Initialize player
+      // Initialize player first
       initPlayer();
 
       // Initialize Cast Receiver
       initCastReceiver();
+
+      // Sync Video.js playback state to CAF
+      // This keeps the sender UI updated with actual playback state
+      syncVideoJsStateToCAF();
 
       // Transition to IDLE state
       appStore.setAppState(AppState.IDLE);
