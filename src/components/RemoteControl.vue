@@ -14,8 +14,14 @@ function handleKeyPress(event: KeyboardEvent) {
 
   console.log(`Key pressed: ${key}`);
 
-  // Don't prevent default for back/stop buttons
-  if (key !== "GoBack" && key !== "BrowserBack" && key !== "MediaStop") {
+  // Handle MediaStop to exit the app
+  if (key === "MediaStop") {
+    window.close();
+    return;
+  }
+
+  // Don't prevent default for back button
+  if (key !== "GoBack" && key !== "BrowserBack") {
     event.preventDefault();
   }
 
