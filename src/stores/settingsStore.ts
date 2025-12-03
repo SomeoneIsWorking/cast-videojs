@@ -13,12 +13,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const selectedIndex = ref(0);
 
   // General Settings
-  const debugMode = ref(false);
   const autoplay = ref(true);
-
-  function setDebugMode(value: boolean) {
-    debugMode.value = value;
-  }
 
   // Main menu items
   const mainMenuItems = computed(() => [
@@ -129,7 +124,6 @@ export const useSettingsStore = defineStore("settings", () => {
     visible,
     currentMenu,
     selectedIndex,
-    debugMode,
     autoplay,
 
     // Computed
@@ -145,6 +139,5 @@ export const useSettingsStore = defineStore("settings", () => {
     navigateLeft,
     navigateRight,
     selectCurrentItem,
-    setDebugMode,
   };
 });

@@ -19,7 +19,6 @@ onMounted(() => {
     :class="[
       appStore.appStateClass,
       appStore.contentStateClass,
-      { 'flag-user-inactive': appStore.userInactive, 'flag-seek': appStore.seekFlag },
     ]"
   >
     <div class="splash-screen">
@@ -44,17 +43,6 @@ onMounted(() => {
         <div class="media-title">{{ playerStore.mediaTitle }}</div>
         <div class="media-description">{{ playerStore.mediaDescription }}</div>
       </div>
-    </div>
-
-    <div class="controls-overlay">
-      <div class="progress-container">
-        <div class="progress-bar" :style="{ width: `${appStore.progress}%` }"></div>
-      </div>
-      <div class="time-display">
-        <span class="text-elapsed">{{ appStore.formatTime(appStore.currentTime) }}</span>
-        <span class="text-duration">{{ appStore.formatTime(appStore.duration) }}</span>
-      </div>
-      <div id="icon-state" :class="{ playing: appStore.isPlaying }"></div>
     </div>
 
     <div class="error-screen">
@@ -119,10 +107,6 @@ onMounted(() => {
   z-index: 50;
 }
 
-.flag-user-inactive .media-info {
-  opacity: 0;
-}
-
 .thumb-container {
   width: 120px;
   height: 120px;
@@ -147,60 +131,6 @@ onMounted(() => {
   font-size: 1.2rem;
   color: #ccc;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-/* Controls overlay */
-.controls-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 2rem;
-  opacity: 1;
-  transition: opacity 0.3s;
-  z-index: 50;
-}
-
-.flag-user-inactive .controls-overlay {
-  opacity: 0;
-}
-
-.progress-container {
-  width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.progress-bar {
-  height: 100%;
-  background: #4caf50;
-  transition: width 0.3s;
-}
-
-.time-display {
-  display: flex;
-  justify-content: space-between;
-  color: #fff;
-  font-size: 1.2rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-#icon-state {
-  position: absolute;
-  bottom: 50%;
-  left: 50%;
-  transform: translate(-50%, 50%);
-  width: 80px;
-  height: 80px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-#icon-state.playing {
-  opacity: 1;
 }
 
 /* Status text */

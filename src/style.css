@@ -64,16 +64,6 @@ body #app {
   display: table;
 }
 
-.content-state-playback.flag-user-inactive .overlay,
-.content-state-paused.flag-user-inactive .overlay {
-  display: none;
-}
-
-.content-state-playback.flag-seek .overlay,
-.content-state-buffering.flag-seek .overlay {
-  display: block;
-}
-
 .content-state-buffering .loading-spinner,
 .content-state-buffering #player {
   display: block;
@@ -94,21 +84,6 @@ body #app {
 
 .app-state-error .error-message {
   display: block;
-}
-
-.flag-seek.content-state-playback .overlay,
-.flag-seek.content-state-buffering .overlay {
-  display: block;
-}
-
-.flag-seek.content-state-playback .overlay .media-metadata,
-.flag-seek.content-state-buffering .overlay .media-metadata {
-  display: none;
-}
-
-.flag-seek.content-state-playback .overlay .cast-controlbar,
-.flag-seek.content-state-buffering .overlay .cast-controlbar {
-  display: table;
 }
 
 @keyframes pulse {

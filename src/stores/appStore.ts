@@ -21,11 +21,7 @@ export const useAppStore = defineStore("app", () => {
   const contentState = ref<ContentState | null>(null);
   const currentTime = ref(0);
   const duration = ref(0);
-  const userInactive = ref(false);
-  const seekFlag = ref(false);
   const errorMessage = ref("");
-
-  let userActivityTimeout: number | null = null;
 
   // Computed
   const appStateClass = computed(() => `app-state-${appState.value}`);
@@ -68,10 +64,6 @@ export const useAppStore = defineStore("app", () => {
     duration.value = time;
   }
 
-  function setSeekFlag(flag: boolean) {
-    seekFlag.value = flag;
-  }
-
   function setError(message: string) {
     errorMessage.value = message;
     appState.value = AppState.ERROR;
@@ -79,18 +71,6 @@ export const useAppStore = defineStore("app", () => {
 
   function clearError() {
     errorMessage.value = "";
-  }
-
-  function resetUserActivityTimeout() {
-    userInactive.value = false;
-
-    if (userActivityTimeout) {
-      clearTimeout(userActivityTimeout);
-    }
-
-    userActivityTimeout = setTimeout(() => {
-      userInactive.value = true;
-    }, 5000);
   }
 
   function formatTime(seconds: number): string {
@@ -116,8 +96,6 @@ export const useAppStore = defineStore("app", () => {
     contentState,
     currentTime,
     duration,
-    userInactive,
-    seekFlag,
     errorMessage,
 
     // Computed
@@ -132,10 +110,8 @@ export const useAppStore = defineStore("app", () => {
     setContentState,
     setCurrentTime,
     setDuration,
-    setSeekFlag,
     setError,
     clearError,
-    resetUserActivityTimeout,
     formatTime,
   };
 });
