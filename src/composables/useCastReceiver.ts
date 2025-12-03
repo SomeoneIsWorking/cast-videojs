@@ -125,36 +125,6 @@ export function useCastReceiver() {
       return data;
     }
 
-    const activeTrackIds = data.activeTrackIds;
-
-    // Handle text tracks
-    const textTracks = playerStore.player.textTracks().tracks_;
-    for (let i = 0; i < textTracks.length; i++) {
-      textTracks[i].mode = "disabled";
-    }
-
-    activeTrackIds.forEach((trackId: any) => {
-      for (let i = 0; i < textTracks.length; i++) {
-        if (textTracks[i].id == trackId || textTracks[i].src == trackId) {
-          textTracks[i].mode = "showing";
-        }
-      }
-    });
-
-    // Handle audio tracks
-    const audioTracks = playerStore.player.audioTracks().tracks_;
-    if (audioTracks) {
-      activeTrackIds.forEach((trackId: any) => {
-        for (let i = 0; i < audioTracks.length; i++) {
-          if (String(i) == String(trackId)) {
-            audioTracks[i].enabled = true;
-          } else {
-            audioTracks[i].enabled = false;
-          }
-        }
-      });
-    }
-
     return data;
   }
 
