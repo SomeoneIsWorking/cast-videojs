@@ -12,6 +12,8 @@ const playerStore = usePlayerStore();
 function handleKeyPress(event: KeyboardEvent) {
   const key = event.key;
 
+  console.log(`Key pressed: ${key}`);
+
   // Don't prevent default for back/stop buttons
   if (key !== "GoBack" && key !== "BrowserBack" && key !== "MediaStop") {
     event.preventDefault();
