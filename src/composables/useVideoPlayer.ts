@@ -2,7 +2,6 @@ import { ref, onUnmounted, shallowRef } from "vue";
 import videojs from "video.js";
 import { usePlayerStore } from "../stores/playerStore";
 import { useLogStore } from "../stores/logStore";
-import { useSettingsStore } from "../stores/settingsStore";
 import { useAppStore } from "../stores/appStore";
 import { ContentState, AppState } from "../stores/appStore";
 import Player from "video.js/dist/types/player";
@@ -10,7 +9,6 @@ import Player from "video.js/dist/types/player";
 export function useVideoPlayer(elementId: string) {
   const playerStore = usePlayerStore();
   const logStore = useLogStore();
-  const settingsStore = useSettingsStore();
   const appStore = useAppStore();
 
   const player = shallowRef<Player | null>(null);
@@ -18,11 +16,11 @@ export function useVideoPlayer(elementId: string) {
 
   function initPlayer() {
     player.value = videojs(elementId, {
-      controls: false,
+      controls: true,
       autoplay: true,
       preload: "auto",
       fluid: false,
-      fill: true
+      fill: true,
     });
 
     // Set player in store
@@ -32,9 +30,7 @@ export function useVideoPlayer(elementId: string) {
     setupEventListeners();
 
     // Set debug level if needed
-    if (settingsStore.debugMode) {
-      videojs.log.level("debug");
-    }
+    videojs.log.level("debug");
 
     console.log("Video.js player initialized");
     isReady.value = true;
@@ -95,7 +91,6 @@ export function useVideoPlayer(elementId: string) {
     if (player.value) {
       appStore.setCurrentTime(player.value.currentTime()!);
       appStore.setDuration(player.value.duration()!);
-      appStore.resetUserActivityTimeout();
     }
   }
 
