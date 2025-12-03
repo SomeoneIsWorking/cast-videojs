@@ -26,7 +26,7 @@ export const usePlayerStore = defineStore("player", () => {
   const audioTracks = computed<TrackItem[]>(() => {
     if (!player.value) return [];
     const tracks = player.value.audioTracks().tracks_;
-    if (!tracks) return []; // Keep this check as player.value.audioTracks() might return null/undefined
+    if (!tracks) return []; 
     const list: TrackItem[] = [];
     for (let i = 0; i < tracks.length; i++) {
       const track = tracks[i];
@@ -43,7 +43,7 @@ export const usePlayerStore = defineStore("player", () => {
   const subtitleTracks = computed<TrackItem[]>(() => {
     if (!player.value) return [];
     const tracks = player.value.textTracks().tracks_;
-    if (!tracks) return []; // Keep this check as player.value.textTracks() might return null/undefined
+    if (!tracks) return []; 
     const list: TrackItem[] = [];
     for (let i = 0; i < tracks.length; i++) {
       const track = tracks[i];
@@ -198,6 +198,20 @@ export const usePlayerStore = defineStore("player", () => {
     }
   }
 
+  function showControlsBriefly() {
+    if (!player.value) return;
+
+    // Show controls
+    player.value.userActive(true);
+
+    // Hide controls after 3 seconds
+    setTimeout(() => {
+      if (player.value) {
+        player.value.userActive(false);
+      }
+    }, 3000);
+  }
+
   function updateMetadata(metadata: any) {
     if (!metadata) return;
     if (metadata.title) mediaTitle.value = metadata.title;
@@ -267,6 +281,7 @@ export const usePlayerStore = defineStore("player", () => {
     seekBackward,
     seekForward,
     togglePlayPause,
+    showControlsBriefly,
     updateMetadata,
     loadMedia,
   };
