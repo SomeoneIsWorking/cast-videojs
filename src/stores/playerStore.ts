@@ -70,7 +70,11 @@ export const usePlayerStore = defineStore("player", () => {
   function showControlsBriefly() {
     if (!player.value) return;
 
-    // Show controls
+    // Force show controls
+    const controlBar = player.value.getChild('controlBar');
+    if (controlBar) {
+      controlBar.show();
+    }
     player.value.userActive(true);
 
     // Hide controls after 3 seconds
