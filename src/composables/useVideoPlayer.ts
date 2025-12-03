@@ -21,15 +21,10 @@ export function useVideoPlayer(elementId: string) {
       preload: "metadata",
       fluid: false,
       fill: true,
-      errorDisplay: false,
       html5: {
         vhs: {
-          overrideNative: false, // Use native HLS for hardware decoding
-          limitRenditionByPlayerDimensions: true,
-          bandwidth: 4194304, // 4 Mbps - conservative for lower-end processors
-        },
-        nativeAudioTracks: true,
-        nativeVideoTracks: true,
+          overrideNative: true, // Use native HLS for hardware decoding
+        }
       },
     });
 
