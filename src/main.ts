@@ -2,7 +2,6 @@ import { createApp } from "vue";
 import { pinia } from "./stores";
 import App from "./App.vue";
 import "./style.css";
-import "video.js/dist/video-js.css";
 import { useLogStore } from "./stores/logStore";
 
 // Create and mount Vue app

@@ -30,7 +30,7 @@ onMounted(() => {
       <div class="status-text">{{ appStore.statusText }}</div>
     </div>
 
-    <video id="player" class="video-js"></video>
+    <video id="player"></video>
 
     <div class="media-info">
       <img
@@ -61,9 +61,10 @@ onMounted(() => {
   background: #000;
 }
 
-.video-js {
+#player {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 /* State visibility */
