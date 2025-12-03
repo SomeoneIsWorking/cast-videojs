@@ -21,7 +21,7 @@ function handleKeyPress(event: KeyboardEvent) {
 
   // Global shortcuts - check these first
   switch (key) {
-    case "ColorF0Green":
+    case "ColorF1Green":
     case "s":
       settingsStore.toggle();
       return;
