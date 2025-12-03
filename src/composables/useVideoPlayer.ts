@@ -21,11 +21,6 @@ export function useVideoPlayer(elementId: string) {
       preload: "metadata",
       fluid: false,
       fill: true,
-      html5: {
-        vhs: {
-          overrideNative: true, // Use native HLS for hardware decoding
-        }
-      },
     });
 
     // Set player in store
