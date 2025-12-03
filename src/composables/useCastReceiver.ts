@@ -26,10 +26,8 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
 
       const options = new cast.framework.CastReceiverOptions();
       options.useShakaForHls = true;
-      options.disableIdleTimeout = true;
+      options.shakaVersion = "4.16.11";
 
-      // Set logging level
-      castContext.value.setLoggerLevel(cast.framework.LoggerLevel.WARNING);
 
       // Set up message interceptors
       setupMessageInterceptors();
@@ -137,7 +135,9 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       cast.framework.events.EventType.ERROR,
       (event: any) => {
         console.error("CAF Error:", event.detailedErrorCode, event.error);
-        const errorMessage = `CAF Error: ${event.detailedErrorCode || "Unknown error"}`;
+        const errorMessage = `CAF Error: ${
+          event.detailedErrorCode || "Unknown error"
+        }`;
         appStore.setError(errorMessage);
         logStore.addLog("error", ["CAF Error:", event.detailedErrorCode]);
         logStore.show();
