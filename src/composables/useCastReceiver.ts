@@ -1,10 +1,12 @@
 import { ref } from "vue";
 import { usePlayerStore } from "../stores/playerStore";
 import { useLogStore } from "../stores/logStore";
+import { useAppStore, AppState, ContentState } from "../stores/appStore";
 
-export function useCastReceiver() {
+export function useCastReceiver(videoElement: HTMLVideoElement) {
   const playerStore = usePlayerStore();
   const logStore = useLogStore();
+  const appStore = useAppStore();
 
   const castContext = ref<any>(null);
   const playerManager = ref<any>(null);
@@ -19,14 +21,14 @@ export function useCastReceiver() {
       castContext.value = cast.framework.CastReceiverContext.getInstance();
       playerManager.value = castContext.value.getPlayerManager();
 
-      // Set player manager in store
-      playerStore.setPlayerManager(playerManager.value);
+      // Bind CAF to the native video element
+      playerManager.value.setMediaElement(videoElement);
 
       const options = new cast.framework.CastReceiverOptions();
       options.useShakaForHls = true;
       options.disableIdleTimeout = true;
 
-      // Reduce CAF logging to improve performance
+      // Set logging level
       castContext.value.setLoggerLevel(cast.framework.LoggerLevel.WARNING);
 
       // Set up message interceptors
@@ -37,7 +39,7 @@ export function useCastReceiver() {
 
       // Start the receiver
       castContext.value.start(options);
-      console.log("Cast Receiver started");
+      console.log("Cast Receiver started with native video element");
 
       return true;
     } catch (e) {
@@ -50,34 +52,10 @@ export function useCastReceiver() {
   function setupMessageInterceptors() {
     if (!playerManager.value) return;
 
-    // Intercept LOAD request
+    // Intercept LOAD request to update metadata
     playerManager.value.setMessageInterceptor(
       cast.framework.messages.MessageType.LOAD,
       handleLoadRequest
-    );
-
-    // Intercept PLAY request
-    playerManager.value.setMessageInterceptor(
-      cast.framework.messages.MessageType.PLAY,
-      handlePlayRequest
-    );
-
-    // Intercept PAUSE request
-    playerManager.value.setMessageInterceptor(
-      cast.framework.messages.MessageType.PAUSE,
-      handlePauseRequest
-    );
-
-    // Intercept SEEK request
-    playerManager.value.setMessageInterceptor(
-      cast.framework.messages.MessageType.SEEK,
-      handleSeekRequest
-    );
-
-    // Intercept EDIT_TRACKS_INFO request
-    playerManager.value.setMessageInterceptor(
-      cast.framework.messages.MessageType.EDIT_TRACKS_INFO,
-      handleEditTracksInfo
     );
   }
 
@@ -89,104 +67,88 @@ export function useCastReceiver() {
     if (!media || !media.contentId) {
       console.error("Invalid media in load request");
       logStore.show();
-      return null;
+      return loadRequestData;
     }
 
-    // Update metadata in store
+    // Update metadata in store for UI display
     if (media.metadata) {
       playerStore.updateMetadata(media.metadata);
     }
 
-    // Load into Video.js player
-    // This keeps Video.js and CAF in sync - both will have the same media loaded
-    playerStore.loadMedia(media);
-    playerStore.player?.play();
-    // Return the loadRequestData so CAF can track the media state
+    // CAF will handle loading the media into the video element
     return loadRequestData;
-  }
-
-  function handlePlayRequest(data: any) {
-    // CAF handles play through the bound media element
-    // Just show controls briefly for visual feedback
-    playerStore.showControlsBriefly();
-    return data;
-  }
-
-  function handlePauseRequest(data: any) {
-    // CAF handles pause through the bound media element
-    playerStore.showControlsBriefly();
-    return data;
-  }
-
-  function handleSeekRequest(data: any) {
-    // CAF handles seeking through the bound media element
-    // Show controls briefly for visual feedback
-    if (data.currentTime !== undefined) {
-      playerStore.showControlsBriefly();
-    }
-    return data;
-  }
-
-  function handleEditTracksInfo(data: any) {
-    console.log("Edit tracks info:", data)
-
-    return data;
   }
 
   function setupCAFEventListeners() {
     if (!playerManager.value) return;
 
-    // Listen for CAF events
+    // Listen for player state changes
     playerManager.value.addEventListener(
       cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
       () => {
-        console.log('CAF: Player load complete');
+        console.log("CAF: Player load complete");
+        appStore.setAppState(AppState.ACTIVE);
+      }
+    );
+
+    playerManager.value.addEventListener(
+      cast.framework.events.EventType.PLAYING,
+      () => {
+        console.log("CAF: Playing");
+        appStore.setContentState(ContentState.PLAYING);
+      }
+    );
+
+    playerManager.value.addEventListener(
+      cast.framework.events.EventType.PAUSE,
+      () => {
+        console.log("CAF: Paused");
+        appStore.setContentState(ContentState.PAUSED);
+      }
+    );
+
+    playerManager.value.addEventListener(
+      cast.framework.events.EventType.BUFFERING,
+      () => {
+        console.log("CAF: Buffering");
+        appStore.setContentState(ContentState.BUFFERING);
+      }
+    );
+
+    playerManager.value.addEventListener(
+      cast.framework.events.EventType.ENDED,
+      () => {
+        console.log("CAF: Ended");
+        appStore.setContentState(null);
+        appStore.setAppState(AppState.IDLE);
+      }
+    );
+
+    playerManager.value.addEventListener(
+      cast.framework.events.EventType.TIME_UPDATE,
+      (event: any) => {
+        const currentTime = event.currentMediaTime || 0;
+        const duration = playerManager.value.getDurationSec() || 0;
+        appStore.setCurrentTime(currentTime);
+        appStore.setDuration(duration);
       }
     );
 
     playerManager.value.addEventListener(
       cast.framework.events.EventType.ERROR,
       (event: any) => {
-        console.error('CAF Error:', event.detailedErrorCode, event.error);
-        logStore.addLog('error', ['CAF Error:', event.detailedErrorCode]);
+        console.error("CAF Error:", event.detailedErrorCode, event.error);
+        const errorMessage = `CAF Error: ${event.detailedErrorCode || "Unknown error"}`;
+        appStore.setError(errorMessage);
+        logStore.addLog("error", ["CAF Error:", event.detailedErrorCode]);
+        logStore.show();
       }
     );
-  }
-
-  function syncVideoJsStateToCAF() {
-    if (!playerManager.value || !playerStore.player) return;
-
-    const player = playerStore.player;
-
-    // Sync Video.js playback state to CAF's PlayerManager
-    // This ensures the sender UI shows correct state
-    player.on('play', () => {
-      playerManager.value.broadcastStatus(true);
-    });
-
-    player.on('pause', () => {
-      playerManager.value.broadcastStatus(true);
-    });
-
-    player.on('timeupdate', () => {
-      playerManager.value.broadcastStatus(true);
-    });
-
-    player.on('ended', () => {
-      playerManager.value.broadcastStatus(true);
-    });
-
-    player.on('loadedmetadata', () => {
-      playerManager.value.broadcastStatus(true);
-    });
-
-    console.log('Video.js state sync to CAF enabled');
   }
 
   return {
     castContext,
     playerManager,
     initCastReceiver,
-    syncVideoJsStateToCAF,
   };
 }

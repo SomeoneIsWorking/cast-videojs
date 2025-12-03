@@ -1,26 +1,31 @@
 import { useAppStore, AppState } from "../stores/appStore";
 import { useLogStore } from "../stores/logStore";
+import { usePlayerStore } from "../stores/playerStore";
 import { useVideoPlayer } from "./useVideoPlayer";
 import { useCastReceiver } from "./useCastReceiver";
 
 export function useAppInitializer() {
   const appStore = useAppStore();
   const logStore = useLogStore();
+  const playerStore = usePlayerStore();
 
   const { initPlayer } = useVideoPlayer("player");
-  const { initCastReceiver, syncVideoJsStateToCAF } = useCastReceiver();
 
   async function initialize() {
     try {
-      // Initialize player first
-      initPlayer();
+      // Initialize native video element
+      const videoElement = initPlayer();
+      
+      if (!videoElement) {
+        throw new Error("Failed to initialize video element");
+      }
 
-      // Initialize Cast Receiver
+      // Store video element reference
+      playerStore.setVideoElement(videoElement);
+
+      // Initialize Cast Receiver with the video element
+      const { initCastReceiver } = useCastReceiver(videoElement);
       initCastReceiver();
-
-      // Sync Video.js playback state to CAF
-      // This keeps the sender UI updated with actual playback state
-      syncVideoJsStateToCAF();
 
       // Transition to IDLE state
       appStore.setAppState(AppState.IDLE);

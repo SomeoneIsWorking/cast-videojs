@@ -17,6 +17,7 @@ function handleKeyPress(event: KeyboardEvent) {
     event.preventDefault();
   }
 
+  // Global shortcuts - check these first
   switch (key) {
     case "ColorF0Green":
     case "s":
@@ -27,6 +28,8 @@ function handleKeyPress(event: KeyboardEvent) {
       logStore.toggle();
       return;
   }
+
+  // Handle overlay visibility
   if (logStore.visible) {
     handleLoggerKeys(key);
   } else if (settingsStore.visible) {
@@ -70,11 +73,6 @@ function handleSettingsKeys(key: string) {
       break;
     case "Enter":
       settingsStore.selectCurrentItem();
-      break;
-    case "Escape":
-    case "Backspace":
-    case "ColorF0Green":
-      settingsStore.hide();
       break;
   }
 }

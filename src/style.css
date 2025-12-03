@@ -41,30 +41,6 @@ body #app {
   display: none !important;
 }
 
-.content-state-loading .overlay,
-.content-state-loading .overlay .content-buffer,
-.content-state-loading #player {
-  display: block;
-}
-
-.content-state-buffering .loading-spinner,
-.content-state-buffering #player {
-  display: block;
-}
-
-.content-state-buffering #icon-state {
-  display: none;
-}
-
-.content-state-paused .overlay,
-.content-state-paused #player {
-  display: block;
-}
-
-.content-state-paused .cast-controlbar {
-  display: table;
-}
-
 .app-state-error .error-message {
   display: block;
 }
@@ -97,143 +73,6 @@ body #app {
   }
 }
 
-/* Content Loading */
-.overlay {
-  padding: 5.55vh 0;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  display: none;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
-}
-
-.media-metadata {
-  display: flex;
-  flex-direction: row;
-  height: 9.25vh;
-  width: 90%;
-  margin: 0 auto;
-  font-family: 'Open Sans', sans-serif;
-}
-
-.thumb-container {
-  width: 6.25vw;
-  float: left;
-  display: block;
-  margin-right: 1.56vw;
-  border-radius: 4px;
-}
-
-.media-metadata-info {
-  text-align: left;
-}
-
-.media-title {
-  font-size: 1.09vw;
-  color: var(--white);
-  font-weight: 600;
-}
-
-.media-description {
-  font-size: 0.88vw;
-  margin-top: 0.92vh;
-  color: #999;
-}
-
-.content-buffer {
-  width: 90%;
-  height: 0.28vh;
-  display: block;
-  margin: 0 auto;
-  background-color: #475470;
-  position: relative;
-  display: none;
-}
-
-.loading-bar {
-  background-color: var(--accent);
-  position: absolute;
-  right: 100%;
-  width: 30%;
-  height: 0.28vh;
-  animation: move 1s steps(50) infinite alternate;
-  transition-timing-function: ease-out;
-}
-
-@keyframes move {
-  from {
-    right: 70%;
-  }
-  to {
-    right: 0%;
-  }
-}
-
-/* Control Bar */
-ul.cast-controlbar {
-  width: 90%;
-  text-align: left;
-  padding: 0;
-  margin: 1.5vh auto 0;
-  display: none;
-  list-style: none;
-}
-
-ul.cast-controlbar li {
-  display: table-cell;
-  padding: 0 1.04vw;
-  vertical-align: middle;
-  font-size: 1.56vw;
-}
-
-ul.cast-controlbar li:first-child {
-  padding-left: 0;
-}
-
-#icon-state {
-  margin-top: 1px;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-}
-
-#icon-state::before {
-  content: '▶';
-  color: var(--white);
-  font-size: 1.8vw;
-}
-
-#icon-state.playing::before {
-  content: '⏸';
-}
-
-.text-elapsed,
-.text-duration {
-  color: #ccc;
-  font-family: 'Open Sans', sans-serif;
-  font-weight: 300;
-  font-size: 1.2vw;
-  white-space: nowrap;
-}
-
-.timeslider {
-  width: 85%;
-  vertical-align: middle;
-  position: relative;
-  height: 0.52vw;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-.progress-bar {
-  background-color: var(--accent);
-  height: 100%;
-  width: 0%;
-  border-radius: 2px;
-  transition: width 0.1s linear;
-}
-
 /* Error Message */
 .error-message {
   display: none;
@@ -242,15 +81,6 @@ ul.cast-controlbar li:first-child {
   font-size: 1.56vw;
   color: var(--white);
   padding: 20px;
-}
-
-/* Hide Video.js default controls */
-.video-js .vjs-control-bar {
-  display: none !important;
-}
-
-.video-js .vjs-big-play-button {
-  display: none !important;
 }
 
 /* Status Indicator */
@@ -289,23 +119,6 @@ ul.cast-controlbar li:first-child {
 .content-state-paused .status-indicator,
 .content-state-buffering .status-indicator {
   display: none;
-}
-
-/* Responsive adjustments */
-
-@media (max-width: 768px) {
-  .media-title {
-    font-size: 2vw;
-  }
-  
-  .media-description {
-    font-size: 1.5vw;
-  }
-  
-  .text-elapsed,
-  .text-duration {
-    font-size: 2vw;
-  }
 }
 
 /* Remote Control Menu */
