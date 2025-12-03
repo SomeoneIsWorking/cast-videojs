@@ -12,17 +12,10 @@ const playerStore = usePlayerStore();
 function handleKeyPress(event: KeyboardEvent) {
   const key = event.key;
 
-  console.log(`Key pressed: ${key}`);
-
   // Handle MediaStop to exit the app
   if (key === "MediaStop") {
     window.close();
     return;
-  }
-
-  // Don't prevent default for back button
-  if (key !== "GoBack" && key !== "BrowserBack") {
-    event.preventDefault();
   }
 
   // Global shortcuts - check these first
@@ -39,12 +32,17 @@ function handleKeyPress(event: KeyboardEvent) {
 
   // Handle overlay visibility
   if (logStore.visible) {
+    event.stopPropagation();
     handleLoggerKeys(key);
+    return;
   } else if (settingsStore.visible) {
+    event.stopPropagation();
     handleSettingsKeys(key);
-  } else {
-    handlePlayerKeys(key);
+    return;
   }
+
+  // Player controls
+  handlePlayerKeys(key);
 }
 
 function handleLoggerKeys(key: string) {
@@ -67,6 +65,11 @@ function handleLoggerKeys(key: string) {
 
 function handleSettingsKeys(key: string) {
   switch (key) {
+    case "GoBack":
+    case "Escape":
+    case "Backspace":
+      settingsStore.hide();
+      break;
     case "ArrowUp":
       settingsStore.navigateUp();
       break;
@@ -74,7 +77,17 @@ function handleSettingsKeys(key: string) {
       settingsStore.navigateDown();
       break;
     case "ArrowLeft":
-      settingsStore.navigateLeft();
+      if (settingsStore.currentMenu === "subtitle-settings") {
+        // Adjust setting left
+        const item = settingsStore.currentMenuItems[settingsStore.selectedIndex];
+        if (item && item.id === 'size') {
+          settingsStore.adjustSubtitleSetting(-1);
+        } else {
+          settingsStore.adjustSubtitleSetting(-1);
+        }
+      } else {
+        settingsStore.navigateLeft();
+      }
       break;
     case "ArrowRight":
       settingsStore.navigateRight();

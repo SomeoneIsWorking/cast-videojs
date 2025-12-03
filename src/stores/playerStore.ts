@@ -7,6 +7,7 @@ export const usePlayerStore = defineStore("player", () => {
   const menuVisible = ref(false);
   const currentMenu = ref<string | null>(null);
   const selectedIndex = ref(0);
+  const showControls = ref(false);
 
   // Metadata
   const mediaTitle = ref("");
@@ -39,12 +40,21 @@ export const usePlayerStore = defineStore("player", () => {
   function seekBackward() {
     if (!videoElement.value) return;
     videoElement.value.currentTime = Math.max(0, videoElement.value.currentTime - 10);
+    showControlsBriefly();
   }
 
   function seekForward() {
     if (!videoElement.value) return;
     const duration = videoElement.value.duration || 0;
     videoElement.value.currentTime = Math.min(duration, videoElement.value.currentTime + 10);
+    showControlsBriefly();
+  }
+
+  function showControlsBriefly() {
+    showControls.value = true;
+    setTimeout(() => {
+      showControls.value = false;
+    }, 3000);
   }
 
   function togglePlayPause() {
@@ -73,6 +83,7 @@ export const usePlayerStore = defineStore("player", () => {
     mediaTitle,
     mediaDescription,
     thumbUrl,
+    showControls,
 
     // Actions
     setVideoElement,
