@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import { usePlayerStore } from "../stores/playerStore";
 import { useLogStore } from "../stores/logStore";
-import { useAppStore, AppState, ContentState } from "../stores/appStore";
+import { useAppStore, AppState } from "../stores/appStore";
 
 export function useCastReceiver(videoElement: HTMLVideoElement) {
   const playerStore = usePlayerStore();
@@ -87,7 +87,7 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
       () => {
         console.log("CAF: Player load complete");
-        appStore.setAppState(AppState.ACTIVE);
+        appStore.setAppState(AppState.BUFFERING);
       }
     );
 
@@ -95,7 +95,7 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       cast.framework.events.EventType.PLAYING,
       () => {
         console.log("CAF: Playing");
-        appStore.setContentState(ContentState.PLAYING);
+        appStore.setAppState(AppState.PLAYING);
       }
     );
 
@@ -103,7 +103,7 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       cast.framework.events.EventType.PAUSE,
       () => {
         console.log("CAF: Paused");
-        appStore.setContentState(ContentState.PAUSED);
+        appStore.setAppState(AppState.PAUSED);
       }
     );
 
@@ -111,7 +111,7 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       cast.framework.events.EventType.BUFFERING,
       () => {
         console.log("CAF: Buffering");
-        appStore.setContentState(ContentState.BUFFERING);
+        appStore.setAppState(AppState.BUFFERING);
       }
     );
 
@@ -119,7 +119,6 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       cast.framework.events.EventType.ENDED,
       () => {
         console.log("CAF: Ended");
-        appStore.setContentState(null);
         appStore.setAppState(AppState.IDLE);
       }
     );
