@@ -16,10 +16,7 @@ onMounted(() => {
 <template>
   <div
     id="app"
-    :class="[
-      appStore.appStateClass,
-      appStore.contentStateClass,
-    ]"
+    :class="appStore.appStateClass"
   >
     <div class="splash-screen">
       <div class="status-text">{{ appStore.statusText }}</div>
@@ -101,11 +98,17 @@ onMounted(() => {
   position: absolute;
   top: 2rem;
   left: 2rem;
-  display: flex;
+  display: none;
   gap: 1.5rem;
   opacity: 1;
   transition: opacity 0.3s;
   z-index: 50;
+}
+
+.app-state-playing .media-info,
+.app-state-paused .media-info,
+.app-state-buffering .media-info {
+  display: flex;
 }
 
 .thumb-container {

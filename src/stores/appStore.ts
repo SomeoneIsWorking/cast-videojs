@@ -2,33 +2,23 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
 export enum AppState {
-  LOADING = "loading",
-  IDLE = "idle",
-  ACTIVE = "active",
-  ERROR = "error",
-}
-
-export enum ContentState {
-  LOADING = "loading",
-  BUFFERING = "buffering",
-  PLAYING = "playback",
-  PAUSED = "paused",
+  LOADING = "loading",    // Initial receiver startup
+  IDLE = "idle",          // Ready to cast, no media
+  PLAYING = "playing",    // Media is playing
+  PAUSED = "paused",      // Media is paused
+  BUFFERING = "buffering", // Media is buffering
+  ERROR = "error",        // Error state
 }
 
 export const useAppStore = defineStore("app", () => {
   // State
   const appState = ref<AppState>(AppState.LOADING);
-  const contentState = ref<ContentState | null>(null);
   const currentTime = ref(0);
   const duration = ref(0);
   const errorMessage = ref("");
 
   // Computed
   const appStateClass = computed(() => `app-state-${appState.value}`);
-  
-  const contentStateClass = computed(() =>
-    contentState.value ? `content-state-${contentState.value}` : ""
-  );
   
   const progress = computed(() => {
     if (!duration.value || !currentTime.value) return 0;
@@ -39,21 +29,22 @@ export const useAppStore = defineStore("app", () => {
     const messages = {
       [AppState.LOADING]: "Initializing receiver...",
       [AppState.IDLE]: "Ready to Cast",
-      [AppState.ACTIVE]: "",
+      [AppState.PLAYING]: "",
+      [AppState.PAUSED]: "",
+      [AppState.BUFFERING]: "",
       [AppState.ERROR]: "Error occurred",
     };
     return messages[appState.value] || "";
   });
 
-  const isPlaying = computed(() => contentState.value === ContentState.PLAYING);
+  const isPlaying = computed(() => appState.value === AppState.PLAYING);
+  const hasMedia = computed(() => 
+    [AppState.PLAYING, AppState.PAUSED, AppState.BUFFERING].includes(appState.value)
+  );
 
   // Actions
   function setAppState(state: AppState) {
     appState.value = state;
-  }
-
-  function setContentState(state: ContentState | null) {
-    contentState.value = state;
   }
 
   function setCurrentTime(time: number) {
@@ -93,21 +84,19 @@ export const useAppStore = defineStore("app", () => {
   return {
     // State
     appState,
-    contentState,
     currentTime,
     duration,
     errorMessage,
 
     // Computed
     appStateClass,
-    contentStateClass,
     progress,
     statusText,
     isPlaying,
+    hasMedia,
 
     // Actions
     setAppState,
-    setContentState,
     setCurrentTime,
     setDuration,
     setError,
