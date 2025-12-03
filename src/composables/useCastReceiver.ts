@@ -25,9 +25,35 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       playerManager.value.setMediaElement(videoElement);
 
       const options = new cast.framework.CastReceiverOptions();
+      const playbackConfig = new cast.framework.PlaybackConfig();
+      playbackConfig.shakaConfig = {
+        streaming: {
+          bufferingGoal: 25,
+          rebufferingGoal: 3,
+          bufferBehind: 10,
+          retryParameters: {
+            timeout: 20000,
+            stallTimeout: 6000,
+            connectionTimeout: 15000,
+            maxAttempts: 120,
+            baseDelay: 1000,
+            backoffFactor: 2,
+            fuzzFactor: 0.5,
+          },
+        },
+        abr: {
+          bandwidthDowngradeTarget: 0.95,
+          bandwidthUpgradeTarget: 0.85,
+          defaultBandwidthEstimate: 10000,
+
+          enabled: true,
+          switchInterval: 5,
+        },
+      }; // set the config values
+
+      options.playbackConfig = playbackConfig;
       options.useShakaForHls = true;
       options.shakaVersion = "4.16.11";
-
 
       // Set up message interceptors
       setupMessageInterceptors();
