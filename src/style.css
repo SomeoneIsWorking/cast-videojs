@@ -47,23 +47,6 @@ body #app {
   display: block;
 }
 
-.content-state-playback .overlay,
-.content-state-playback #player {
-  display: block;
-}
-
-.content-state-playback #icon-state {
-  visibility: hidden;
-}
-
-.content-state-playback .overlay .media-metadata {
-  display: none;
-}
-
-.content-state-playback .cast-controlbar {
-  display: table;
-}
-
 .content-state-buffering .loading-spinner,
 .content-state-buffering #player {
   display: block;
