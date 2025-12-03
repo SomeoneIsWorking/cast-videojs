@@ -1,12 +1,10 @@
 import { ref } from "vue";
 import { usePlayerStore } from "../stores/playerStore";
 import { useLogStore } from "../stores/logStore";
-import { useSettingsStore } from "../stores/settingsStore";
 
 export function useCastReceiver() {
   const playerStore = usePlayerStore();
   const logStore = useLogStore();
-  const settingsStore = useSettingsStore();
 
   const castContext = ref<any>(null);
   const playerManager = ref<any>(null);
@@ -27,6 +25,9 @@ export function useCastReceiver() {
       const options = new cast.framework.CastReceiverOptions();
       options.useShakaForHls = true;
       options.disableIdleTimeout = true;
+
+      // Reduce CAF logging to improve performance
+      castContext.value.setLoggerLevel(cast.framework.LoggerLevel.WARNING);
 
       // Set up message interceptors
       setupMessageInterceptors();
@@ -75,17 +76,9 @@ export function useCastReceiver() {
       cast.framework.messages.MessageType.EDIT_TRACKS_INFO,
       handleEditTracksInfo
     );
-
-    // Intercept GET_STATUS request
-    playerManager.value.setMessageInterceptor(
-      cast.framework.messages.MessageType.GET_STATUS,
-      handleGetStatus
-    );
   }
 
   function handleLoadRequest(loadRequestData: any) {
-    loadRequestData.media.hlsSegmentFormat =
-      cast.framework.messages.HlsSegmentFormat.TS;
     console.log("Load request received:", loadRequestData);
 
     const media = loadRequestData.media;
@@ -93,7 +86,7 @@ export function useCastReceiver() {
     if (!media || !media.contentId) {
       console.error("Invalid media in load request");
       logStore.show();
-      return loadRequestData;
+      return null;
     }
 
     // Update metadata in store
@@ -101,40 +94,26 @@ export function useCastReceiver() {
       playerStore.updateMetadata(media.metadata);
     }
 
-    // Load media
+    // Load media into Video.js only
     playerStore.loadMedia(media);
 
-    // Handle autoplay
-    if (loadRequestData.autoplay && settingsStore.autoplay) {
-      console.log("Autoplay requested");
-      setTimeout(() => {
-        playerStore.player?.play();
-      }, 100);
-    }
-
-    return loadRequestData;
+    return media;
   }
 
   function handlePlayRequest(data: any) {
-    console.log("Cast PLAY command");
-    if (playerStore.player) {
-      playerStore.player.play();
-    }
+    playerStore.player?.play();
     return data;
   }
 
   function handlePauseRequest(data: any) {
-    console.log("Cast PAUSE command");
-    if (playerStore.player) {
-      playerStore.player.pause();
-    }
+    playerStore.player?.pause();
     return data;
   }
 
   function handleSeekRequest(data: any) {
-    console.log("Cast SEEK command:", data);
-    if (playerStore.player && data.currentTime !== undefined) {
-      playerStore.player.currentTime(data.currentTime);
+    if (data.currentTime !== undefined) {
+      playerStore.player?.currentTime(data.currentTime);
+      playerStore.showControlsBriefly();
     }
     return data;
   }
@@ -176,11 +155,6 @@ export function useCastReceiver() {
       });
     }
 
-    return data;
-  }
-
-  function handleGetStatus(data: any) {
-    console.log("Cast GET_STATUS command", JSON.stringify(data));
     return data;
   }
 

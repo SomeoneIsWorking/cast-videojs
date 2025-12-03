@@ -18,9 +18,19 @@ export function useVideoPlayer(elementId: string) {
     player.value = videojs(elementId, {
       controls: true,
       autoplay: true,
-      preload: "auto",
+      preload: "metadata",
       fluid: false,
       fill: true,
+      errorDisplay: false,
+      html5: {
+        vhs: {
+          overrideNative: false, // Use native HLS for hardware decoding
+          limitRenditionByPlayerDimensions: true,
+          bandwidth: 4194304,
+        },
+        nativeAudioTracks: true,
+        nativeVideoTracks: true,
+      },
     });
 
     // Set player in store
@@ -29,8 +39,8 @@ export function useVideoPlayer(elementId: string) {
     // Set up event listeners
     setupEventListeners();
 
-    // Set debug level if needed
-    videojs.log.level("debug");
+    // Set log level to warn to reduce overhead
+    videojs.log.level("warn");
 
     console.log("Video.js player initialized");
     isReady.value = true;
@@ -50,10 +60,6 @@ export function useVideoPlayer(elementId: string) {
     player.value.on("timeupdate", onTimeUpdate);
     player.value.on("ended", onEnded);
     player.value.on("error", onError);
-    player.value.on("stalled", () => console.warn("Player: stalled"));
-    player.value.on("suspend", () => console.log("Player: suspend"));
-    player.value.on("abort", () => console.warn("Player: abort"));
-    player.value.on("emptied", () => console.log("Player: emptied"));
   }
 
   function onLoadStart() {
