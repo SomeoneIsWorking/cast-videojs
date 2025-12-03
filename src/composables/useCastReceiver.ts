@@ -100,7 +100,7 @@ export function useCastReceiver() {
     // Load into Video.js player
     // This keeps Video.js and CAF in sync - both will have the same media loaded
     playerStore.loadMedia(media);
-
+    playerStore.player?.play();
     // Return the loadRequestData so CAF can track the media state
     return loadRequestData;
   }
