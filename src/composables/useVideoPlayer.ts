@@ -70,7 +70,6 @@ export function useVideoPlayer(elementId: string) {
 
   function onLoadedMetadata() {
     console.log("Player: loadedmetadata");
-    updateCastTracks();
   }
 
   function onPlay() {
@@ -117,44 +116,6 @@ export function useVideoPlayer(elementId: string) {
     appStore.setError(errorMessage);
     logStore.addLog("error", [errorMessage]);
     logStore.show();
-  }
-
-  function updateCastTracks() {
-    if (!player.value) return;
-
-    const tracks = [];
-    let trackId = 1;
-
-    // Add text tracks
-    const textTracks = player.value.textTracks().tracks_;
-    for (let i = 0; i < textTracks.length; i++) {
-      const track = textTracks[i];
-      tracks.push({
-        trackId: trackId++,
-        type: "TEXT",
-        subtype: track.kind.toUpperCase(),
-        name: track.label || `Track ${i + 1}`,
-        language: track.language,
-        trackContentId: track.src,
-      });
-    }
-
-    // Add audio tracks
-    const audioTracks = player.value.audioTracks().tracks_;
-    if (audioTracks) {
-      for (let i = 0; i < audioTracks.length; i++) {
-        const track = audioTracks[i];
-        tracks.push({
-          trackId: trackId++,
-          type: "AUDIO",
-          name: track.label || `Audio ${i + 1}`,
-          language: track.language,
-          trackContentId: String(i),
-        });
-      }
-    }
-
-    console.log("Available tracks:", tracks);
   }
 
   function dispose() {

@@ -1,12 +1,9 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { usePlayerStore } from "./playerStore";
 
 type MenuType = "main" | "audio" | "subtitles";
 
 export const useSettingsStore = defineStore("settings", () => {
-  const playerStore = usePlayerStore();
-
   // State
   const visible = ref(false);
   const currentMenu = ref<MenuType>("main");
@@ -26,10 +23,6 @@ export const useSettingsStore = defineStore("settings", () => {
     switch (currentMenu.value) {
       case "main":
         return mainMenuItems.value;
-      case "audio":
-        return playerStore.audioTracks;
-      case "subtitles":
-        return playerStore.subtitleTracks;
       default:
         return [];
     }
@@ -92,12 +85,6 @@ export const useSettingsStore = defineStore("settings", () => {
       const selected = mainMenuItems.value[selectedIndex.value];
       if (selected) {
         currentMenu.value = selected.id as MenuType;
-        // Set selected index to current active item
-        if (selected.id === "audio") {
-          selectedIndex.value = playerStore.currentAudioTrackIndex;
-        } else if (selected.id === "subtitles") {
-          selectedIndex.value = playerStore.currentSubtitleTrackIndex;
-        }
       }
     }
   }
@@ -107,12 +94,6 @@ export const useSettingsStore = defineStore("settings", () => {
       // Enter submenu
       navigateRight();
     } else {
-      // Select track
-      if (currentMenu.value === "audio") {
-        playerStore.selectAudioTrack(selectedIndex.value);
-      } else if (currentMenu.value === "subtitles") {
-        playerStore.selectSubtitleTrack(selectedIndex.value);
-      }
       // Go back to main menu after selection
       currentMenu.value = "main";
       selectedIndex.value = 0;
