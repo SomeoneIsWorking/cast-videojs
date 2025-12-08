@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { usePlayerStore } from "./playerStore";
+import { useSubtitlesStore } from "./subtitlesStore";
+import { CastReceiverContext } from "@/utils/CastReceiverContext";
 
 type MenuType = "main" | "audio" | "subtitles" | "subtitle-settings";
 
@@ -13,7 +15,7 @@ interface MenuItem {
 
 export const useSettingsStore = defineStore("settings", () => {
   const playerStore = usePlayerStore();
-
+  const subtitlesStore = useSubtitlesStore();
   // State
   const visible = ref(false);
   const currentMenu = ref<MenuType>("main");
@@ -21,8 +23,8 @@ export const useSettingsStore = defineStore("settings", () => {
 
   // Subtitle settings
   const subtitleSize = ref<number>(100); // percentage
-  const subtitleColor = ref<string>('#FFFFFF');
-  const subtitleBackground = ref<string>('rgba(0, 0, 0, 0.75)');
+  const subtitleColor = ref<string>("#FFFFFF");
+  const subtitleBackground = ref<string>("rgba(0, 0, 0, 0.5)");
 
   // Main menu items
   const mainMenuItems = computed(() => [
@@ -33,62 +35,65 @@ export const useSettingsStore = defineStore("settings", () => {
 
   // Audio track menu items
   const audioTrackItems = computed((): MenuItem[] => {
-    if (!playerStore.videoElement) return [];
-    
-    const audioTracks = (playerStore.videoElement as any).audioTracks;
-    if (!audioTracks) return [];
-    
-    const tracks = Array.from(audioTracks) as any[];
-    return tracks.map((track, index) => ({
+    return CastReceiverContext.audioTracks.map((track, index) => ({
       id: `audio-${index}`,
-      label: track.label || `Audio Track ${index + 1}`,
-      active: track.enabled,
+      label: track.name || `Audio ${index + 1}`,
+      active:
+        CastReceiverContext.audioTracksManager.getActiveId() === track.trackId,
     }));
   });
 
   // Subtitle track menu items
   const subtitleTrackItems = computed((): MenuItem[] => {
-    if (!playerStore.videoElement) return [];
-    
-    const tracks = Array.from(playerStore.videoElement.textTracks || []);
-    const items: MenuItem[] = tracks
-      .filter(track => track.kind === 'subtitles' || track.kind === 'captions')
-      .map((track, index) => ({
-        id: `subtitle-${index}`,
-        label: track.label || `Subtitle ${index + 1}`,
-        active: track.mode === 'showing',
-      }));
-    
+    const textTracks = CastReceiverContext.textTracks;
+
+    const items: MenuItem[] = textTracks.map((track, index) => ({
+      id: `subtitle-${index}`,
+      label: track.name || `Subtitle ${index + 1}`,
+      active:
+        CastReceiverContext.textTracksManager.getActiveIds().includes(track.trackId),
+    }));
+
     // Add "Off" option
     items.unshift({
-      id: 'subtitle-off',
-      label: 'Off',
-      active: items.every(item => !item.active),
+      id: "subtitle-off",
+      label: "Off",
+      active: items.every((item) => !item.active),
     });
-    
+
     return items;
   });
 
   // Subtitle settings menu items
   const subtitleSettingsItems = computed((): MenuItem[] => [
-    { 
-      id: 'size', 
-      label: 'Size',
-      value: `${subtitleSize.value}%`
+    {
+      id: "size",
+      label: "Size",
+      value: `${subtitleSize.value}%`,
     },
-    { 
-      id: 'color', 
-      label: 'Text Color',
-      value: subtitleColor.value === '#FFFFFF' ? 'White' : 
-             subtitleColor.value === '#FFFF00' ? 'Yellow' :
-             subtitleColor.value === '#00FF00' ? 'Green' : 'Custom'
+    {
+      id: "color",
+      label: "Text Color",
+      value:
+        subtitleColor.value === "#FFFFFF"
+          ? "White"
+          : subtitleColor.value === "#FFFF00"
+          ? "Yellow"
+          : subtitleColor.value === "#00FF00"
+          ? "Green"
+          : "Custom",
     },
-    { 
-      id: 'background', 
-      label: 'Background',
-      value: subtitleBackground.value === 'rgba(0, 0, 0, 0.75)' ? 'Dark' :
-             subtitleBackground.value === 'rgba(0, 0, 0, 0.5)' ? 'Medium' :
-             subtitleBackground.value === 'rgba(0, 0, 0, 0)' ? 'None' : 'Custom'
+    {
+      id: "background",
+      label: "Background",
+      value:
+        subtitleBackground.value === "rgba(0, 0, 0, 0.75)"
+          ? "Dark"
+          : subtitleBackground.value === "rgba(0, 0, 0, 0.5)"
+          ? "Medium"
+          : subtitleBackground.value === "rgba(0, 0, 0, 0)"
+          ? "None"
+          : "Custom",
     },
   ]);
 
@@ -179,42 +184,28 @@ export const useSettingsStore = defineStore("settings", () => {
     const item = subtitleSettingsItems.value[selectedIndex.value];
     if (!item) return;
 
-    if (item.id === 'size') {
-      subtitleSize.value = Math.max(50, Math.min(200, subtitleSize.value + (direction * 10)));
-      applySubtitleStyles();
-    } else if (item.id === 'color') {
-      const colors = ['#FFFFFF', '#FFFF00', '#00FF00'];
+    if (item.id === "size") {
+      subtitleSize.value = Math.max(
+        50,
+        Math.min(200, subtitleSize.value + direction * 10)
+      );
+    } else if (item.id === "color") {
+      const colors = ["#FFFFFF", "#FFFF00", "#00FF00"];
       const currentIndex = colors.indexOf(subtitleColor.value);
-      const newIndex = (currentIndex + direction + colors.length) % colors.length;
+      const newIndex =
+        (currentIndex + direction + colors.length) % colors.length;
       subtitleColor.value = colors[newIndex];
-      applySubtitleStyles();
-    } else if (item.id === 'background') {
-      const backgrounds = ['rgba(0, 0, 0, 0.75)', 'rgba(0, 0, 0, 0.5)', 'rgba(0, 0, 0, 0)'];
+    } else if (item.id === "background") {
+      const backgrounds = [
+        "rgba(0, 0, 0, 0.75)",
+        "rgba(0, 0, 0, 0.5)",
+        "rgba(0, 0, 0, 0)",
+      ];
       const currentIndex = backgrounds.indexOf(subtitleBackground.value);
-      const newIndex = (currentIndex + direction + backgrounds.length) % backgrounds.length;
+      const newIndex =
+        (currentIndex + direction + backgrounds.length) % backgrounds.length;
       subtitleBackground.value = backgrounds[newIndex];
-      applySubtitleStyles();
     }
-  }
-
-  function applySubtitleStyles() {
-    if (!playerStore.videoElement) return;
-
-    // Apply styles to ::cue pseudo-element via style tag
-    let styleEl = document.getElementById('subtitle-styles') as HTMLStyleElement;
-    if (!styleEl) {
-      styleEl = document.createElement('style');
-      styleEl.id = 'subtitle-styles';
-      document.head.appendChild(styleEl);
-    }
-
-    styleEl.textContent = `
-      video::cue {
-        font-size: ${subtitleSize.value}%;
-        color: ${subtitleColor.value};
-        background-color: ${subtitleBackground.value};
-      }
-    `;
   }
 
   function selectCurrentItem() {
@@ -232,7 +223,7 @@ export const useSettingsStore = defineStore("settings", () => {
             audioTracks[i].enabled = false;
           }
           // Enable selected track
-          const trackIndex = parseInt(item.id.replace('audio-', ''));
+          const trackIndex = parseInt(item.id.replace("audio-", ""));
           if (audioTracks[trackIndex]) {
             audioTracks[trackIndex].enabled = true;
           }
@@ -243,20 +234,18 @@ export const useSettingsStore = defineStore("settings", () => {
     } else if (currentMenu.value === "subtitles") {
       // Select subtitle track
       const item = subtitleTrackItems.value[selectedIndex.value];
-      if (item && playerStore.videoElement) {
-        const tracks = playerStore.videoElement.textTracks;
-        if (tracks) {
-          // Hide all tracks
-          for (let i = 0; i < tracks.length; i++) {
-            tracks[i].mode = 'hidden';
-          }
-          // Show selected track
-          if (item.id !== 'subtitle-off') {
-            const trackIndex = parseInt(item.id.replace('subtitle-', ''));
-            if (tracks[trackIndex]) {
-              tracks[trackIndex].mode = 'showing';
-            }
-          }
+      if (item.id === "subtitle-off") {
+        // Clear manual subtitles
+        subtitlesStore.clearSubtitles();
+      } else {
+        // Get the media info to find the track ID
+        const textTracks = CastReceiverContext.textTracks;
+        const trackIndex = parseInt(item.id.replace("subtitle-", ""));
+
+        if (textTracks[trackIndex]) {
+          // Load subtitle manually
+          subtitlesStore.loadSubtitleTrack(textTracks[trackIndex].trackId);
+          console.log("Text track changed to:", textTracks[trackIndex].name);
         }
       }
       currentMenu.value = "main";
@@ -272,6 +261,9 @@ export const useSettingsStore = defineStore("settings", () => {
     visible,
     currentMenu,
     selectedIndex,
+    subtitleSize,
+    subtitleColor,
+    subtitleBackground,
 
     // Computed
     currentMenuItems,
