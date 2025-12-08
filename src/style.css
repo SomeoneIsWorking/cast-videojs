@@ -43,6 +43,23 @@ body #app {
   object-fit: contain;
 }
 
+/* Subtitle/Caption Styles */
+#player::cue {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  font-size: 1.5vw;
+  font-family: 'Open Sans', Arial, sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+video::cue {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  font-size: 1.5vw;
+  font-family: 'Open Sans', Arial, sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+}
+
 #player::-webkit-media-controls {
   opacity: 0;
   transition: opacity 0.3s;

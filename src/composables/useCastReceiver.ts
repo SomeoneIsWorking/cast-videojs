@@ -1,60 +1,25 @@
-import { ref } from "vue";
-import { usePlayerStore } from "../stores/playerStore";
 import { useLogStore } from "../stores/logStore";
-import { useAppStore, AppState } from "../stores/appStore";
+import { useCAFConfig } from "./useCAFConfig";
+import { useCAFMessages } from "./useCAFMessages";
+import { useCAFEvents } from "./useCAFEvents";
+import { useSubtitlesStore } from "@/stores/subtitlesStore";
+import { CastReceiverContext } from "@/utils/CastReceiverContext";
 
 export function useCastReceiver(videoElement: HTMLVideoElement) {
-  const playerStore = usePlayerStore();
   const logStore = useLogStore();
-  const appStore = useAppStore();
-
-  const castContext = ref<any>(null);
-  const playerManager = ref<any>(null);
+  const subtitlesStore = useSubtitlesStore();
+  const { createReceiverOptions } = useCAFConfig();
 
   function initCastReceiver() {
     try {
-      if (typeof cast === "undefined") {
-        console.error("Cast SDK not loaded");
-        throw new Error("Cast SDK not loaded");
-      }
+      validateCastSDK();
+      bindVideoElement();
+      setupPlayerManager();
 
-      castContext.value = cast.framework.CastReceiverContext.getInstance();
-      playerManager.value = castContext.value.getPlayerManager();
+      const options = createReceiverOptions();
+      CastReceiverContext.start(options);
 
-      // Bind CAF to the native video element
-      playerManager.value.setMediaElement(videoElement);
-
-      const options = new cast.framework.CastReceiverOptions();
-      const playbackConfig = new cast.framework.PlaybackConfig();
-      
-      playbackConfig.shakaConfig = {
-        streaming: {
-          bufferingGoal: 10,
-          rebufferingGoal: 2,
-          bufferBehind: 3,
-          retryParameters: {
-            maxAttempts: 5,
-            baseDelay: 1000,
-            backoffFactor: 2,
-            fuzzFactor: 0.5,
-          },
-        },
-      };
-
-      options.playbackConfig = playbackConfig;
-      options.useShakaForHls = true;
-      options.shakaVersion = "4.16.11";
-
-      // Set up message interceptors
-      setupMessageInterceptors();
-
-      // Set up CAF event listeners
-      setupCAFEventListeners();
-
-      // Start the receiver
-      castContext.value.start(options);
       console.log("Cast Receiver started with native video element");
-
       return true;
     } catch (e) {
       console.error("Error initializing Cast Receiver:", e);
@@ -63,107 +28,44 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
     }
   }
 
-  function setupMessageInterceptors() {
-    if (!playerManager.value) return;
-
-    // Intercept LOAD request to update metadata
-    playerManager.value.setMessageInterceptor(
-      cast.framework.messages.MessageType.LOAD,
-      handleLoadRequest
-    );
+  function validateCastSDK() {
+    if (typeof cast === "undefined") {
+      console.error("Cast SDK not loaded");
+      throw new Error("Cast SDK not loaded");
+    }
   }
 
-  function handleLoadRequest(loadRequestData: any) {
-    console.log("Load request received:", loadRequestData);
-
-    const media = loadRequestData.media;
-
-    if (!media || !media.contentId) {
-      console.error("Invalid media in load request");
-      logStore.show();
-      return loadRequestData;
-    }
-
-    // Update metadata in store for UI display
-    if (media.metadata) {
-      playerStore.updateMetadata(media.metadata);
-    }
-
-    // CAF will handle loading the media into the video element
-    return loadRequestData;
+  function bindVideoElement() {
+    CastReceiverContext.playerManager.setMediaElement(videoElement);
   }
 
-  function setupCAFEventListeners() {
-    if (!playerManager.value) return;
+  function setupPlayerManager() {
+    // Set up message interceptors
+    const { setupMessageInterceptors } = useCAFMessages();
+    setupMessageInterceptors();
 
-    // Listen for player state changes
-    playerManager.value.addEventListener(
-      cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
-      () => {
-        console.log("CAF: Player load complete");
-        appStore.setAppState(AppState.BUFFERING);
-      }
+    // Set up event listeners with callback for when tracks are loaded
+    const { setupEventListeners } = useCAFEvents(
+      handleTracksAvailable
     );
+    setupEventListeners();
+  }
 
-    playerManager.value.addEventListener(
-      cast.framework.events.EventType.PLAYING,
-      () => {
-        console.log("CAF: Playing");
-        appStore.setAppState(AppState.PLAYING);
-      }
-    );
+  function handleTracksAvailable() {
+    const textTracks = CastReceiverContext.textTracks;
+    if (textTracks.length === 0) {
+      console.log("No text tracks available");
+      return;
+    }
 
-    playerManager.value.addEventListener(
-      cast.framework.events.EventType.PAUSE,
-      () => {
-        console.log("CAF: Paused");
-        appStore.setAppState(AppState.PAUSED);
-      }
-    );
+    console.log(`Text tracks available: ${textTracks.length}`);
 
-    playerManager.value.addEventListener(
-      cast.framework.events.EventType.BUFFERING,
-      () => {
-        console.log("CAF: Buffering");
-        appStore.setAppState(AppState.BUFFERING);
-      }
-    );
-
-    playerManager.value.addEventListener(
-      cast.framework.events.EventType.ENDED,
-      () => {
-        console.log("CAF: Ended");
-        appStore.setAppState(AppState.IDLE);
-      }
-    );
-
-    playerManager.value.addEventListener(
-      cast.framework.events.EventType.TIME_UPDATE,
-      (event: any) => {
-        const currentTime = event.currentMediaTime || 0;
-        const duration = playerManager.value.getDurationSec() || 0;
-        appStore.setCurrentTime(currentTime);
-        appStore.setDuration(duration);
-      }
-    );
-
-    playerManager.value.addEventListener(
-      cast.framework.events.EventType.ERROR,
-      (event: any) => {
-        console.error("CAF Error:", event.detailedErrorCode, event.error);
-        const errorMessage = `CAF Error: ${
-          event.detailedErrorCode || "Unknown error"
-        }`;
-        appStore.setError(errorMessage);
-        logStore.addLog("error", ["CAF Error:", event.detailedErrorCode]);
-        logStore.show();
-      }
-    );
+    // Auto-load subtitles for the first text track as an example
+    subtitlesStore.loadSubtitleTrack(textTracks[0].trackId);
   }
 
   return {
-    castContext,
-    playerManager,
     initCastReceiver,
+    handleTracksAvailable
   };
 }

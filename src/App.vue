@@ -3,12 +3,16 @@ import CastReceiver from "./components/CastReceiver.vue";
 import RemoteControl from "./components/RemoteControl.vue";
 import DebugViewer from "./components/DebugViewer.vue";
 import SettingsPanel from "./components/SettingsPanel.vue";
+import SubtitleOverlay from "./components/SubtitleOverlay.vue";
 </script>
 
 <template>
   <div id="app-root">
     <!-- Main Cast Receiver Component -->
     <CastReceiver />
+
+    <!-- Subtitle Overlay -->
+    <SubtitleOverlay />
 
     <!-- Remote Control Handler (no visual output, just keyboard handling) -->
     <RemoteControl />
