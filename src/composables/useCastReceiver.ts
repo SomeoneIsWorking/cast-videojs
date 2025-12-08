@@ -28,9 +28,9 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
       const playbackConfig = new cast.framework.PlaybackConfig();
       playbackConfig.shakaConfig = {
         streaming: {
-          bufferingGoal: 25,
-          rebufferingGoal: 3,
-          bufferBehind: 10,
+          bufferingGoal: 15,
+          rebufferingGoal: 2,
+          bufferBehind: 5,
           retryParameters: {
             timeout: 20000,
             stallTimeout: 6000,
@@ -45,9 +45,12 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
           bandwidthDowngradeTarget: 0.95,
           bandwidthUpgradeTarget: 0.85,
           defaultBandwidthEstimate: 10000,
-
           enabled: true,
           switchInterval: 5,
+        },
+        manifest: {
+          disableAudio: false,
+          disableVideo: false,
         },
       }; // set the config values
 
