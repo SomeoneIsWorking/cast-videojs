@@ -44,6 +44,7 @@ const subtitleStyle = computed(() => ({
   text-align: center;
   -webkit-text-stroke: 1px black;
   max-width: 80%;
+  font-weight: bold;
   line-height: 1.4;
   text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
   white-space: pre-line;
