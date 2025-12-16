@@ -34,7 +34,7 @@ export function useAppInitializer() {
       console.error("Initialization error:", e);
       const message = e instanceof Error ? e.message : "Initialization failed";
       appStore.setError(message);
-      logStore.show();
+      logStore.show(true);
     }
   }
 

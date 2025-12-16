@@ -59,6 +59,10 @@ export function useCAFEvents(
 
   function handlePlaying() {
     console.log("CAF: Playing");
+    // If logs were shown due to an error, hide them now that playback resumed
+    if (logStore.isLastShowReasonError) {
+      logStore.hide();
+    }
     appStore.setAppState(AppState.PLAYING);
   }
 
@@ -91,7 +95,7 @@ export function useCAFEvents(
     }`;
     appStore.setError(errorMessage);
     console.error("CAF Error details:", event);
-    logStore.show();
+    logStore.show(true);
   }
 
   return {

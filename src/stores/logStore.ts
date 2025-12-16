@@ -12,6 +12,7 @@ export const useLogStore = defineStore("log", () => {
   const logs = ref<LogEntry[]>([]);
   const maxLogs = ref(100);
   const visible = ref(false);
+  const isLastShowReasonError = ref(false);
   const scrollPosition = ref(0);
 
   // Computed
@@ -64,12 +65,14 @@ export const useLogStore = defineStore("log", () => {
     visible.value = !visible.value;
   }
 
-  function show() {
+  function show(reasonIsError?: boolean) {
     visible.value = true;
+    isLastShowReasonError.value = !!reasonIsError;
   }
 
   function hide() {
     visible.value = false;
+    isLastShowReasonError.value = false;
   }
 
   function hijackConsole() {
@@ -103,6 +106,7 @@ export const useLogStore = defineStore("log", () => {
     logs,
     maxLogs,
     visible,
+    isLastShowReasonError,
 
     // Computed
     logCount,
