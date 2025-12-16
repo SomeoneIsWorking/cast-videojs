@@ -1,14 +1,18 @@
 import { useLogStore } from "../stores/logStore";
-import { useCAFConfig } from "./useCAFConfig";
 import { useCAFMessages } from "./useCAFMessages";
 import { useCAFEvents } from "./useCAFEvents";
 import { useSubtitlesStore } from "@/stores/subtitlesStore";
 import { CastReceiverContext } from "@/utils/CastReceiverContext";
 
+function createReceiverOptions(): cast.framework.CastReceiverOptions {
+  const options = new cast.framework.CastReceiverOptions();
+  options.useShakaForHls = true;
+  return options;
+}
+
 export function useCastReceiver(videoElement: HTMLVideoElement) {
   const logStore = useLogStore();
   const subtitlesStore = useSubtitlesStore();
-  const { createReceiverOptions } = useCAFConfig();
 
   function initCastReceiver() {
     try {
@@ -45,9 +49,7 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
     setupMessageInterceptors();
 
     // Set up event listeners with callback for when tracks are loaded
-    const { setupEventListeners } = useCAFEvents(
-      handleTracksAvailable
-    );
+    const { setupEventListeners } = useCAFEvents(handleTracksAvailable);
     setupEventListeners();
   }
 
@@ -66,6 +68,6 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
 
   return {
     initCastReceiver,
-    handleTracksAvailable
+    handleTracksAvailable,
   };
 }
