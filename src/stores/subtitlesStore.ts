@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { usePlayerStore } from "./playerStore";
-import { CastReceiverContext } from "@/utils/CastReceiverContext";
 
 interface VTTCue {
   startTime: number;
@@ -14,29 +13,16 @@ export const useSubtitlesStore = defineStore("subtitles", () => {
 
   const currentCue = ref<string>("");
   const cues = ref<VTTCue[]>([]);
-  const activeTrackId = ref<number | null>(null);
+  const visible = ref(false);
 
-  async function loadSubtitleTrack(trackId: number) {
+  async function loadSubtitles(url: string) {
     try {
-      const mediaInfo = CastReceiverContext.instance
-        .getPlayerManager()
-        .getMediaInformation();
-      const url = new URL(mediaInfo!.contentId)!.origin + "/subtitles.vtt";
-      await loadSubtitlesUrl(url, trackId);
-    } catch (error) {
-      console.error(`Failed to load subtitles: ${error}`);
-    }
-  }
-
-  async function loadSubtitlesUrl(url: string, trackId?: number | null) {
-    try {
-      console.log(`Loading subtitles from ${url} for track ID ${trackId}`);
+      console.log(`Loading subtitles from ${url}`);
       const response = await fetch(url);
       const vttText = await response.text();
 
       cues.value = parseVTT(vttText);
-      activeTrackId.value = trackId ?? null;
-
+      visible.value = true;
       console.log(`Loaded ${cues.value.length} subtitle cues`);
 
       // Start watching current time
@@ -112,7 +98,7 @@ export const useSubtitlesStore = defineStore("subtitles", () => {
     if (!videoElement) return;
 
     const handleTimeUpdate = () => {
-      if (cues.value.length === 0) {
+      if (!visible.value) {
         currentCue.value = "";
         return;
       }
@@ -130,18 +116,15 @@ export const useSubtitlesStore = defineStore("subtitles", () => {
     videoElement.addEventListener("timeupdate", handleTimeUpdate);
   }
 
-  function clearSubtitles() {
-    cues.value = [];
-    currentCue.value = "";
-    activeTrackId.value = null;
+  function show(value: boolean) {
+    visible.value = value;
   }
 
   return {
     currentCue,
     cues,
-    activeTrackId,
-    loadSubtitleTrack,
-    loadSubtitlesUrl,
-    clearSubtitles,
+    visible,
+    loadSubtitles,
+    show,
   };
 });

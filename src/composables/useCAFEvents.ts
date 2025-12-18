@@ -2,9 +2,7 @@ import { CastReceiverContext } from "@/utils/CastReceiverContext";
 import { useAppStore, AppState } from "../stores/appStore";
 import { useLogStore } from "../stores/logStore";
 
-export function useCAFEvents(
-  onPlayerLoadComplete?: () => void
-) {
+export function useCAFEvents() {
   const appStore = useAppStore();
   const logStore = useLogStore();
 
@@ -49,9 +47,6 @@ export function useCAFEvents(
     try {
       console.log("CAF: Player load complete");
       appStore.setAppState(AppState.BUFFERING);
-
-      // Notify callback that tracks are now available
-      onPlayerLoadComplete?.();
     } catch (error) {
       console.error("Error in PLAYER_LOAD_COMPLETE handler:", error);
     }
