@@ -45,22 +45,21 @@ export const useSettingsStore = defineStore("settings", () => {
 
   // Subtitle track menu items
   const subtitleTrackItems = computed((): MenuItem[] => {
-    const textTracks = CastReceiverContext.textTracks;
+    const items: MenuItem[] = [
+      {
+        id: "subtitle-off",
+        label: "Off",
+        active: !subtitlesStore.visible,
+      },
+    ];
 
-    const items: MenuItem[] = textTracks.map((track, index) => ({
-      id: `subtitle-${index}`,
-      label: track.name || `Subtitle ${index + 1}`,
-      active:
-        CastReceiverContext.textTracksManager.getActiveIds().includes(track.trackId),
-    }));
-
-    // Add "Off" option
-    items.unshift({
-      id: "subtitle-off",
-      label: "Off",
-      active: items.every((item) => !item.active),
-    });
-
+    if (subtitlesStore.cues.length) {
+      items.push({
+        id: `subtitle-on`,
+        label: "On",
+        active: subtitlesStore.visible,
+      });
+    }
     return items;
   });
 
@@ -240,16 +239,12 @@ export const useSettingsStore = defineStore("settings", () => {
       const item = subtitleTrackItems.value[selectedIndex.value];
       if (item.id === "subtitle-off") {
         // Clear manual subtitles
-        subtitlesStore.clearSubtitles();
+        subtitlesStore.show(false);
       } else {
         // Get the media info to find the track ID
         const textTracks = CastReceiverContext.textTracks;
-        const trackIndex = parseInt(item.id.replace("subtitle-", ""));
-
-        if (textTracks[trackIndex]) {
-          // Load subtitle manually
-          subtitlesStore.loadSubtitleTrack(textTracks[trackIndex].trackId);
-          console.log("Text track changed to:", textTracks[trackIndex].name);
+        if (textTracks.length) {
+          subtitlesStore.show(true);
         }
       }
       currentMenu.value = "main";

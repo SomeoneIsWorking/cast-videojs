@@ -23,15 +23,15 @@ export function useCAFMessages() {
         case "subtitles":
           {
             const subtitlesStore = useSubtitlesStore();
-            const url = String(event.data.data.subtitlesUrl);
+            const url = event.data.data;
             console.log("Received subtitles command:", url);
-            subtitlesStore.loadSubtitlesUrl(url);
+            subtitlesStore.loadSubtitles(url);
           }
           break;
         case "subtitleSize":
           {
             const settingsStore = useSettingsStore();
-            const size = Number(event.data.data.subtitleSize);
+            const size = Number(event.data.data);
             console.log("Received subtitleSize command:", size);
             settingsStore.setSubtitleSize(size);
           }
@@ -61,26 +61,6 @@ export function useCAFMessages() {
     // Update metadata in store for UI display
     if (media.metadata) {
       playerStore.updateMetadata(media.metadata);
-    }
-
-    // Handle explicit customData keys only: subtitlesUrl and subtitleSize
-    const customData: any = (media as any).customData || {};
-    try {
-      const subtitlesStore = useSubtitlesStore();
-      const settingsStore = useSettingsStore();
-
-      if (customData.subtitlesUrl) {
-        subtitlesStore.loadSubtitlesUrl(String(customData.subtitlesUrl));
-      }
-
-      if (
-        customData.subtitleSize !== undefined &&
-        customData.subtitleSize !== null
-      ) {
-        settingsStore.setSubtitleSize(Number(customData.subtitleSize));
-      }
-    } catch (err) {
-      console.warn("Error handling custom load commands:", err);
     }
 
     // CAF will handle loading the media into the video element

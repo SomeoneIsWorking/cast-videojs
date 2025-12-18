@@ -1,7 +1,6 @@
 import { useLogStore } from "../stores/logStore";
 import { useCAFMessages } from "./useCAFMessages";
 import { useCAFEvents } from "./useCAFEvents";
-import { useSubtitlesStore } from "@/stores/subtitlesStore";
 import { CastReceiverContext } from "@/utils/CastReceiverContext";
 
 function createReceiverOptions(): cast.framework.CastReceiverOptions {
@@ -12,7 +11,6 @@ function createReceiverOptions(): cast.framework.CastReceiverOptions {
 
 export function useCastReceiver(videoElement: HTMLVideoElement) {
   const logStore = useLogStore();
-  const subtitlesStore = useSubtitlesStore();
 
   function initCastReceiver() {
     try {
@@ -49,25 +47,11 @@ export function useCastReceiver(videoElement: HTMLVideoElement) {
     setupMessageInterceptors();
 
     // Set up event listeners with callback for when tracks are loaded
-    const { setupEventListeners } = useCAFEvents(handleTracksAvailable);
+    const { setupEventListeners } = useCAFEvents();
     setupEventListeners();
-  }
-
-  function handleTracksAvailable() {
-    const textTracks = CastReceiverContext.textTracks;
-    if (textTracks.length === 0) {
-      console.log("No text tracks available");
-      return;
-    }
-
-    console.log(`Text tracks available: ${textTracks.length}`);
-
-    // Auto-load subtitles for the first text track as an example
-    subtitlesStore.loadSubtitleTrack(textTracks[0].trackId);
   }
 
   return {
     initCastReceiver,
-    handleTracksAvailable,
   };
 }
