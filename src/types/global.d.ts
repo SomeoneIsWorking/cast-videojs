@@ -2,12 +2,20 @@
 
 declare global {
   interface Window {
-    debugViewer?: any
+    debugViewer?: any;
   }
 
   namespace cast {
     namespace framework {
+      namespace system {
+        class Message<T>{
+          type: "message";
+          senderId: string;
+          data: T;
+        }
+      }
       class CastReceiverContext {
+        addCustomMessageListener<T>(namespace: string, callback: (message: system.Message<T>) => void);
         static getInstance(): CastReceiverContext;
         start(options?: CastReceiverOptions): void;
         getPlayerManager(): PlayerManager;
@@ -78,18 +86,18 @@ declare global {
         }
 
         enum MessageType {
-          LOAD = 'LOAD',
-          PLAY = 'PLAY',
-          PAUSE = 'PAUSE',
-          SEEK = 'SEEK',
-          STOP = 'STOP',
-          EDIT_TRACKS_INFO = 'EDIT_TRACKS_INFO',
+          LOAD = "LOAD",
+          PLAY = "PLAY",
+          PAUSE = "PAUSE",
+          SEEK = "SEEK",
+          STOP = "STOP",
+          EDIT_TRACKS_INFO = "EDIT_TRACKS_INFO",
         }
 
         enum TrackType {
-          TEXT = 'TEXT',
-          AUDIO = 'AUDIO',
-          VIDEO = 'VIDEO',
+          TEXT = "TEXT",
+          AUDIO = "AUDIO",
+          VIDEO = "VIDEO",
         }
 
         interface EditTracksInfoRequest {
@@ -133,13 +141,13 @@ declare global {
 
       namespace events {
         enum EventType {
-          PLAYER_LOAD_COMPLETE = 'PLAYER_LOAD_COMPLETE',
-          PLAYING = 'PLAYING',
-          PAUSE = 'PAUSE',
-          BUFFERING = 'BUFFERING',
-          ENDED = 'ENDED',
-          TIME_UPDATE = 'TIME_UPDATE',
-          ERROR = 'ERROR',
+          PLAYER_LOAD_COMPLETE = "PLAYER_LOAD_COMPLETE",
+          PLAYING = "PLAYING",
+          PAUSE = "PAUSE",
+          BUFFERING = "BUFFERING",
+          ENDED = "ENDED",
+          TIME_UPDATE = "TIME_UPDATE",
+          ERROR = "ERROR",
         }
 
         interface ErrorEvent {
@@ -154,7 +162,7 @@ declare global {
     }
   }
 
-  const videojs: any
+  const videojs: any;
 }
 
-export {}
+export {};
