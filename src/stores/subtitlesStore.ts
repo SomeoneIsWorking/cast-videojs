@@ -22,19 +22,27 @@ export const useSubtitlesStore = defineStore("subtitles", () => {
         .getPlayerManager()
         .getMediaInformation();
       const url = new URL(mediaInfo!.contentId)!.origin + "/subtitles.vtt";
+      await loadSubtitlesUrl(url, trackId);
+    } catch (error) {
+      console.error(`Failed to load subtitles: ${error}`);
+    }
+  }
+
+  async function loadSubtitlesUrl(url: string, trackId?: number | null) {
+    try {
       console.log(`Loading subtitles from ${url} for track ID ${trackId}`);
       const response = await fetch(url);
       const vttText = await response.text();
 
       cues.value = parseVTT(vttText);
-      activeTrackId.value = trackId;
+      activeTrackId.value = trackId ?? null;
 
       console.log(`Loaded ${cues.value.length} subtitle cues`);
 
       // Start watching current time
       setupTimeWatcher();
     } catch (error) {
-      console.error(`Failed to load subtitles: ${error}`);
+      console.error(`Failed to load subtitles from URL ${url}: ${error}`);
     }
   }
 
@@ -133,6 +141,7 @@ export const useSubtitlesStore = defineStore("subtitles", () => {
     cues,
     activeTrackId,
     loadSubtitleTrack,
+    loadSubtitlesUrl,
     clearSubtitles,
   };
 });

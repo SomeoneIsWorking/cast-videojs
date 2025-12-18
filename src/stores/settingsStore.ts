@@ -208,6 +208,10 @@ export const useSettingsStore = defineStore("settings", () => {
     }
   }
 
+  function setSubtitleSize(size: number) {
+    subtitleSize.value = Math.max(50, Math.min(200, Math.round(size)));
+  }
+
   function selectCurrentItem() {
     if (currentMenu.value === "main") {
       // Enter submenu
@@ -277,6 +281,7 @@ export const useSettingsStore = defineStore("settings", () => {
     navigateDown,
     navigateLeft,
     navigateRight,
+    setSubtitleSize,
     selectCurrentItem,
     adjustSubtitleSetting,
   };
