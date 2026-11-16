@@ -6,6 +6,19 @@ import { CastReceiverContext } from "@/utils/CastReceiverContext";
 function createReceiverOptions(): cast.framework.CastReceiverOptions {
   const options = new cast.framework.CastReceiverOptions();
   options.useShakaForHls = true;
+
+  // Place HLS segments by their own timestamps instead of appending them back
+  // to back. wails-cast transcodes every segment on its own, and each AAC
+  // encode adds ~21ms of encoder lead-in, so a segment's audio runs slightly
+  // longer than its video. In Shaka's default sequence mode that surplus is
+  // stacked onto every following segment and the audio drifts further behind
+  // the picture over time (until a seek flushes the buffer). With timestamps
+  // honoured, the surplus just overlaps the next segment and nothing builds up.
+  const playbackConfig = new cast.framework.PlaybackConfig();
+  playbackConfig.shakaConfig = {
+    manifest: { hls: { sequenceMode: false } },
+  };
+  options.playbackConfig = playbackConfig;
   return options;
 }
 
